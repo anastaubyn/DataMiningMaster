@@ -8,7 +8,7 @@ import numpy as np
 # IMPORT DATABASE
 # =============================================================================
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\insurance.db'
+my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 
 # Connect to the database
 conn = sqlite3.connect(my_path)
@@ -427,6 +427,6 @@ df_insurance['Advance_Bin']=np.where(df_insurance['negative']<0, 1, 0)
 
 
 
-
+Olá!!
 
 
