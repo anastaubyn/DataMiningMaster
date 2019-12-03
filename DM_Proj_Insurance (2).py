@@ -8,7 +8,8 @@ import numpy as np
 # IMPORT DATABASE
 # =============================================================================
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\insurance.db'
+#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\insurance.db'
+my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 
 # Connect to the database
 conn = sqlite3.connect(my_path)
@@ -270,12 +271,6 @@ correlacoes_n = df_insurance.corr()
 # =============================================
 # Replace 2 nulls values in Education using KNN
 # =============================================
-#see which variables make sense to "regress" 
-y,x = dmatrices('Education ~ Motor + Household + Life + Work_Compensation', data = df_insurance, NA_action='drop', return_type='dataframe')
-mod = sm.OLS(y,x)
-res = mod.fit()
-print(res.summary())
-# 30% de variância explicada onde todos são estatisticamente significativos para 5%
 
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -404,26 +399,27 @@ df_insurance['Client_Years']=2016-df_insurance['First_Year']
 
 df_insurance['Yearly_Salary']=12*df_insurance['Monthly_Salary']
 
-df_insurance['Total_Premiums']=df_insurance['Motor']+df_insurance['Household']+df_insurance['Health']+df_insurance['Life']+df_insurance['Work_Compensation']
+df_insurance['Total_Premiums']=abs(df_insurance['Motor'])+abs(df_insurance['Household'])+abs(df_insurance['Health'])+abs(df_insurance['Life'])+abs(df_insurance['Work_Compensation'])
 
 df_insurance['Effort_Rate']=df_insurance['Total_Premiums']/df_insurance['Yearly_Salary']
 
-df_insurance['Motor_Ratio']=df_insurance['Motor']/df_insurance['Total_Premiums']
+df_insurance['Motor_Ratio']=abs(df_insurance['Motor'])/df_insurance['Total_Premiums']
 
-df_insurance['Household_Ratio']=df_insurance['Household']/df_insurance['Total_Premiums']
+df_insurance['Household_Ratio']=abs(df_insurance['Household'])/df_insurance['Total_Premiums']
 
-df_insurance['Health_Ratio']=df_insurance['Health']/df_insurance['Total_Premiums']
+df_insurance['Health_Ratio']=abs(df_insurance['Health'])/df_insurance['Total_Premiums']
 
-df_insurance['Life_Ratio']=df_insurance['Life']/df_insurance['Total_Premiums']
+df_insurance['Life_Ratio']=abs(df_insurance['Life'])/df_insurance['Total_Premiums']
 
-df_insurance['Work_Compensation_Ratio']=df_insurance['Work_Compensation']/df_insurance['Total_Premiums']
+df_insurance['Work_Compensation_Ratio']=abs(df_insurance['Work_Compensation'])/df_insurance['Total_Premiums']
 
 
-df_insurance['negative']=df_insurance.iloc[:,8:12][df_insurance<0].sum(1)
+df_insurance['negative']=df_insurance.iloc[:,7:13][df_insurance<0].sum(1)
 
-df_insurance['Advance_Perc']=abs(df_insurance['negative']/df_insurance['Total_Premiums']*100)
+df_insurance['PayedAdvance_Ratio']=abs(df_insurance['negative'])/df_insurance['Total_Premiums']
 df_insurance['Advance_Bin']=np.where(df_insurance['negative']<0, 1, 0)
 
+df_insurance.drop(labels=['negative'], axis=1,inplace=True)
 
 
 
