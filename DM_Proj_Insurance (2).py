@@ -8,8 +8,8 @@ import numpy as np
 # IMPORT DATABASE
 # =============================================================================
 
-#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\insurance.db'
-my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 
 # Connect to the database
 conn = sqlite3.connect(my_path)
@@ -221,8 +221,8 @@ descriptive_o['Nulls'] = df_insurance.shape[0] - descriptive_o['count']
 # =============================================================================
 # CORRELATIONS
 # =============================================================================
-
-correlacoes = df_insurance.corr(method='pearson')
+corr = df_insurance.drop(columns='Cust_ID')
+correlacoes = corr.corr(method='pearson')
 import seaborn as sb
 import matplotlib.pyplot as plt
 
@@ -379,16 +379,16 @@ df_insurance.dropna(subset = ['Children'], inplace = True) # 13 rows dropped
 df_insurance = df_insurance.append(incomplete, sort=True) # 13 rows added
 
 
+# =============================================================================
+# DESCRIPTIVE STATISTICS AFTER DATA TREATMENT
+# =============================================================================
 
-#Descriptive statistics after nulls treatment
 descriptive_an = df_insurance.describe().T
 descriptive_an['Nulls'] = df_insurance.shape[0] - descriptive_an['count']
 
-correlacoes_an = df_insurance.corr()
 
 del complete, correlacoes, correlacoes_n, data_to_reg_complete, data_to_reg_incomplete, descriptive
 del descriptive_n, descriptive_o, imputed_Salary, imputed_values, incomplete, mask, temp_df, x, y
-
 
 
 # =============================================================================
@@ -411,7 +411,7 @@ df_insurance['Health_Ratio']=abs(df_insurance['Health'])/df_insurance['Total_Pre
 
 df_insurance['Life_Ratio']=abs(df_insurance['Life'])/df_insurance['Total_Premiums']
 
-df_insurance['Work_Compensation_Ratio']=abs(df_insurance['Work_Compensation'])/df_insurance['Total_Premiums']
+df_insurance['Work_Ratio']=abs(df_insurance['Work_Compensation'])/df_insurance['Total_Premiums']
 
 
 df_insurance['negative']=df_insurance.iloc[:,7:13][df_insurance<0].sum(1)
@@ -421,8 +421,20 @@ df_insurance['Advance_Bin']=np.where(df_insurance['negative']<0, 1, 0)
 
 df_insurance.drop(labels=['negative'], axis=1,inplace=True)
 
+df_insurance = df_insurance.drop(columns='Monthly_Salary')
 
+# =============================================================================
+# CORRELATIONS WITH NEW VARIABLES
+# =============================================================================
 
+corr = df_insurance.drop(columns='Cust_ID')
+correlacoes = corr.corr(method='pearson')
+import seaborn as sb
+import matplotlib.pyplot as plt
+
+f, ax = plt.subplots(figsize=(8, 6))
+cmap = sb.diverging_palette(249, 163, as_cmap=True)
+sb.heatmap(correlacoes, cmap=cmap, center=0, square=True, linewidths=.5)
 
 
 
