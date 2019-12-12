@@ -8,8 +8,9 @@ import numpy as np
 # IMPORT DATABASE
 # =============================================================================
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 # Connect to the database
 conn = sqlite3.connect(my_path)
@@ -460,5 +461,7 @@ sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, linewidths=
 #sb.set(font_scale=1.5)
 bottom, top = ax.get_ylim()             
 ax.set_ylim(bottom + 0.5, top - 0.5)
+
+
 
 
