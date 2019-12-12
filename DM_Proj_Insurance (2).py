@@ -226,11 +226,17 @@ correlacoes = corr.corr(method='pearson')
 import seaborn as sb
 import matplotlib.pyplot as plt
 
+correlacoes[np.abs(correlacoes)<0.05] = 0
+
+correlacoes = round(correlacoes,1)
+
 mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
-f, ax = plt.subplots(figsize=(8, 6))
+f, ax = plt.subplots(figsize=(10, 8))
 cmap = sb.diverging_palette(249, 163, as_cmap=True)
-sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, linewidths=.5)
+sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, linewidths=.5, annot=True, vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
+bottom, top = ax.get_ylim()  
+ax.set_ylim(bottom + 0.5, top - 0.5)
 
 # =============================================================================
 # MISSING VALUES TREATMENT
@@ -431,7 +437,7 @@ df_insurance['Cancelled']=np.where(df_insurance['Negative']<0, 1, 0)
 df_insurance['Negative']=abs(df_insurance['Negative'])
 
 
-df_insurance = df_insurance.drop(columns='Monthly_Salary')
+df_insurance = df_insurance.drop(columns=['Monthly_Salary','First_Year'])
 
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
@@ -442,11 +448,17 @@ correlacoes = corr.corr(method='pearson')
 import seaborn as sb
 import matplotlib.pyplot as plt
 
+correlacoes[np.abs(correlacoes)<0.05] = 0
+
+correlacoes = round(correlacoes,1)
+
 f, ax = plt.subplots(figsize=(16, 16))
 mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
 cmap = sb.diverging_palette(249, 163, as_cmap=True)
-sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, linewidths=.5, annot=True, fmt='.1f')
+sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, linewidths=.5, annot=True,vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
+#sb.set(font_scale=1.5)
 bottom, top = ax.get_ylim()             
 ax.set_ylim(bottom + 0.5, top - 0.5)
+
 
