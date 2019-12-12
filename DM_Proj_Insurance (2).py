@@ -399,27 +399,37 @@ df_insurance['Client_Years']=2016-df_insurance['First_Year']
 
 df_insurance['Yearly_Salary']=12*df_insurance['Monthly_Salary']
 
-df_insurance['Total_Premiums']=abs(df_insurance['Motor'])+abs(df_insurance['Household'])+abs(df_insurance['Health'])+abs(df_insurance['Life'])+abs(df_insurance['Work_Compensation'])
+df_insurance['Total_Premiums']=df_insurance.loc[:,['Motor','Household','Health','Life','Work_Compensation']][df_insurance>0].sum(1)
+
+# DELETE ROWS WHERE TOTAL_PREMIUMS EQUALS 0
+df_insurance = df_insurance[df_insurance['Total_Premiums'] != 0]
+
 
 df_insurance['Effort_Rate']=df_insurance['Total_Premiums']/df_insurance['Yearly_Salary']
 
-df_insurance['Motor_Ratio']=abs(df_insurance['Motor'])/df_insurance['Total_Premiums']
+df_insurance['Motor_Ratio']=df_insurance['Motor']/df_insurance['Total_Premiums']
+df_insurance['Motor_Ratio']=df_insurance['Motor_Ratio'].where(df_insurance['Motor_Ratio']>0, 0)
 
-df_insurance['Household_Ratio']=abs(df_insurance['Household'])/df_insurance['Total_Premiums']
+df_insurance['Household_Ratio']=df_insurance['Household']/df_insurance['Total_Premiums']
+df_insurance['Household_Ratio']=df_insurance['Household_Ratio'].where(df_insurance['Household_Ratio']>0, 0)
 
-df_insurance['Health_Ratio']=abs(df_insurance['Health'])/df_insurance['Total_Premiums']
+df_insurance['Health_Ratio']=df_insurance['Health']/df_insurance['Total_Premiums']
+df_insurance['Health_Ratio']=df_insurance['Health_Ratio'].where(df_insurance['Health_Ratio']>0, 0)
 
-df_insurance['Life_Ratio']=abs(df_insurance['Life'])/df_insurance['Total_Premiums']
+df_insurance['Life_Ratio']=df_insurance['Life']/df_insurance['Total_Premiums']
+df_insurance['Life_Ratio']=df_insurance['Life_Ratio'].where(df_insurance['Life_Ratio']>0, 0)
 
-df_insurance['Work_Ratio']=abs(df_insurance['Work_Compensation'])/df_insurance['Total_Premiums']
+df_insurance['Work_Ratio']=df_insurance['Work_Compensation']/df_insurance['Total_Premiums']
+df_insurance['Work_Ratio']=df_insurance['Work_Ratio'].where(df_insurance['Work_Ratio']>0, 0)
 
 
-df_insurance['negative']=df_insurance.iloc[:,7:13][df_insurance<0].sum(1)
+df_insurance['Negative']=df_insurance.iloc[:,7:13][df_insurance<0].sum(1)
 
-df_insurance['PayedAdvance_Ratio']=abs(df_insurance['negative'])/df_insurance['Total_Premiums']
-df_insurance['Advance_Bin']=np.where(df_insurance['negative']<0, 1, 0)
+#df_insurance['PayedAdvance_Ratio']=abs(df_insurance['negative'])/df_insurance['Total_Premiums']
+df_insurance['Cancelled']=np.where(df_insurance['Negative']<0, 1, 0)
 
-df_insurance.drop(labels=['negative'], axis=1,inplace=True)
+df_insurance['Negative']=abs(df_insurance['Negative'])
+
 
 df_insurance = df_insurance.drop(columns='Monthly_Salary')
 
@@ -432,9 +442,11 @@ correlacoes = corr.corr(method='pearson')
 import seaborn as sb
 import matplotlib.pyplot as plt
 
-f, ax = plt.subplots(figsize=(8, 6))
+f, ax = plt.subplots(figsize=(16, 16))
+mask = np.zeros_like(correlacoes, dtype=np.bool)
+mask[np.triu_indices_from(mask)] = True
 cmap = sb.diverging_palette(249, 163, as_cmap=True)
-sb.heatmap(correlacoes, cmap=cmap, center=0, square=True, linewidths=.5)
-
-
+sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, linewidths=.5, annot=True, fmt='.1f')
+bottom, top = ax.get_ylim()             
+ax.set_ylim(bottom + 0.5, top - 0.5)
 
