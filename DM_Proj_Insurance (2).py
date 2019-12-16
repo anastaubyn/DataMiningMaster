@@ -456,13 +456,22 @@ correlacoes = round(correlacoes,1)
 f, ax = plt.subplots(figsize=(16, 16))
 mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
-cmap = sb.diverging_palette(249, 163, as_cmap=True)
-sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, linewidths=.5, annot=True, vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
+
+mask_annot = np.absolute(correlacoes.values)>=0.60
+annot1 = np.where(mask_annot, correlacoes.values, np.full((21,21),""))
+cmap = sb.diverging_palette(49, 163, as_cmap=True)
+sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
 sb.set(font_scale=1.2)
 sb.set_style('white')
 bottom, top = ax.get_ylim()             
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
+# Pass 2D Numpy array to annot parameter
+mask_annot = np.absolute(corr.values)>=0.70 # Annotate correlations above abs(0.7)
+annot_arr = np.where(mask_annot, corr.values.round(2), np.full((17,17),""))
+
+# Draw the heatmap with the mask and correct aspect ratio
+sns.heatmap(corr, cmap=cmap, center=0, square=True, mask=mask, linewidths=.5, ax=ax, annot=annot_arr, fmt="s")
 
 
 
