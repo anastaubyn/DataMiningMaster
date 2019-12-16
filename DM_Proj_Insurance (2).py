@@ -466,12 +466,7 @@ sb.set_style('white')
 bottom, top = ax.get_ylim()             
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
-# Pass 2D Numpy array to annot parameter
-mask_annot = np.absolute(corr.values)>=0.70 # Annotate correlations above abs(0.7)
-annot_arr = np.where(mask_annot, corr.values.round(2), np.full((17,17),""))
 
-# Draw the heatmap with the mask and correct aspect ratio
-sns.heatmap(corr, cmap=cmap, center=0, square=True, mask=mask, linewidths=.5, ax=ax, annot=annot_arr, fmt="s")
 
 
 
