@@ -466,6 +466,28 @@ sb.set_style('white')
 bottom, top = ax.get_ylim()             
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
+del annot1, mask_annot, bottom, top
+
+# =============================================================================
+# EXPLORATORY ANALYSIS - CATEGORICAL AND NUMERICAL VARIABLES
+# =============================================================================
+from ggplot import ggplot, aes, geom_boxplot
+
+ggplot(df_insurance, aes(x='Area', y='CMV')) + \
+    geom_boxplot(fill='darkseagreen4') + \
+    scale_color_brewer(palette = "Greens") + \
+    facet_wrap('Education', ncol=4)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
