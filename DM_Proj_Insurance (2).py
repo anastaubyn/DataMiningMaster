@@ -160,8 +160,8 @@ df_insurance = df_insurance[(df_insurance.CMV<=1500) | (df_insurance.CMV.isnull(
 # 27 rows dropped!
 
 #EXTRA:
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1320)])
-df_insurance=df_insurance[(df_insurance.CMV<=1320) | (df_insurance.CMV.isnull())] #11 rows dropped
+#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1320)])
+#df_insurance=df_insurance[(df_insurance.CMV<=1320) | (df_insurance.CMV.isnull())] #11 rows dropped
 # 38 rows dropped
 
 #Outliers para Claims
@@ -194,11 +194,10 @@ fig.show()
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>6000)])
 df_insurance=df_insurance[(df_insurance.Health<=6000) | (df_insurance.Health.isnull())] #1 row dropped
-################## não saiu nada
 
 #EXTRA:
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>420)])
-df_insurance=df_insurance[(df_insurance.Health<=420) | (df_insurance.Health.isnull())]
+#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>420)])
+#df_insurance=df_insurance[(df_insurance.Health<=420) | (df_insurance.Health.isnull())]
 # 3 rows dropped
 
 #Outliers para Life
@@ -209,12 +208,12 @@ fig = px.box(df_insurance, y=df_insurance.Life, color_discrete_sequence=['dimgre
 fig.show()
 
 #EXTRA:
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>331)])
-df_insurance=df_insurance[(df_insurance.Life<=331) | (df_insurance.Life.isnull())] # 6 rows dropped
+#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>331)])
+#df_insurance=df_insurance[(df_insurance.Life<=331) | (df_insurance.Life.isnull())] # 6 rows dropped
 
 #EXTRA:
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>285)])
-df_insurance=df_insurance[(df_insurance.Life<=285) | (df_insurance.Life.isnull())] # 11 rows dropped
+#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>285)])
+#df_insurance=df_insurance[(df_insurance.Life<=285) | (df_insurance.Life.isnull())] # 11 rows dropped
 
 #Outliers para Household
 fig = px.histogram(df_insurance, x=df_insurance.Household, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -227,8 +226,8 @@ outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1700)]
 df_insurance=df_insurance[(df_insurance.Household<=1700) | (df_insurance.Household.isnull())] # 5 rows dropped
 
 #EXTRA:
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1240)])
-df_insurance=df_insurance[(df_insurance.Household<=1240) | (df_insurance.Household.isnull())]
+#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1240)])
+#df_insurance=df_insurance[(df_insurance.Household<=1240) | (df_insurance.Household.isnull())]
 # 20 rows dropped
 
 #Outliers para Work Compensations
@@ -243,11 +242,11 @@ outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensatio
 df_insurance=df_insurance[(df_insurance.Work_Compensation<=400) | (df_insurance.Work_Compensation.isnull())] # 3 rows dropped
 
 # EXTRA:
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensation>300)])
-df_insurance=df_insurance[(df_insurance.Work_Compensation<=300) | (df_insurance.Work_Compensation.isnull())] 
+#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensation>300)])
+#df_insurance=df_insurance[(df_insurance.Work_Compensation<=300) | (df_insurance.Work_Compensation.isnull())] 
 # 12 rows dropped
 
-# 42 rows dropped in total!!
+# 42 rows dropped in total!!!
 
 #COM OS EXTRA SÃO 104 (1%)
 
