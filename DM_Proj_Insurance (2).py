@@ -8,8 +8,8 @@ import numpy as np
 # IMPORT DATABASE
 # =============================================================================
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 # Connect to the database
@@ -132,7 +132,9 @@ fig.show()
 
 fig = px.box(df_insurance, y=df_insurance.Monthly_Salary, color_discrete_sequence=['dimgrey'], template='plotly_white')
 fig.show()
-df_insurance=df_insurance[(df_insurance.Monthly_Salary<30000) | (df_insurance.Monthly_Salary.isnull())] #2 rows dropped
+
+outliers_bons = df_insurance[(df_insurance.Monthly_Salary>30000)]
+df_insurance=df_insurance[(df_insurance.Monthly_Salary<=30000) | (df_insurance.Monthly_Salary.isnull())] #2 rows dropped
 #diff=df_insurance[~df_insurance.index.isin(df_insurance1.index)]
 
 #Outliers para CMV
@@ -142,16 +144,25 @@ fig.show()
 fig = px.box(df_insurance, y=df_insurance.CMV, color_discrete_sequence=['dimgrey'], template='plotly_white')
 fig.show()
     #Remover o outlier dramático
-df_insurance=df_insurance[(df_insurance.CMV>-125000) | (df_insurance.CMV.isnull())] #1 row dropped
-df_insurance=df_insurance[(df_insurance.CMV>-20000) | (df_insurance.CMV.isnull())] #5 rows dropped
-df_insurance=df_insurance[(df_insurance.CMV>-11000) | (df_insurance.CMV.isnull())] #1 row dropped
-df_insurance=df_insurance[(df_insurance.CMV>-5000) | (df_insurance.CMV.isnull())] #5 rows dropped
-df_insurance=df_insurance[(df_insurance.CMV>-1000) | (df_insurance.CMV.isnull())] #2 rows dropped
-df_insurance=df_insurance[(df_insurance.CMV>-420) | (df_insurance.CMV.isnull())] #1 row dropped
+    
+# remover outliers e coloca-los num dataset
+outliers_fracos = df_insurance[(df_insurance.CMV<-420)] # 15 rows
 
-outliers_bons = df_insurance[(df_insurance.CMV>1500)]
-df_insurance=df_insurance[(df_insurance.CMV<1500) | (df_insurance.CMV.isnull())] #12 rows dropped
+df_insurance=df_insurance[(df_insurance.CMV>=-125000) | (df_insurance.CMV.isnull())] #1 row dropped
+df_insurance=df_insurance[(df_insurance.CMV>=-20000) | (df_insurance.CMV.isnull())] #5 rows dropped
+df_insurance=df_insurance[(df_insurance.CMV>=-11000) | (df_insurance.CMV.isnull())] #1 row dropped
+df_insurance=df_insurance[(df_insurance.CMV>=-5000) | (df_insurance.CMV.isnull())] #5 rows dropped
+df_insurance=df_insurance[(df_insurance.CMV>=-1000) | (df_insurance.CMV.isnull())] #2 rows dropped
+df_insurance=df_insurance[(df_insurance.CMV>=-420) | (df_insurance.CMV.isnull())] #1 row dropped
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1500)])
+df_insurance = df_insurance[(df_insurance.CMV<=1500) | (df_insurance.CMV.isnull())] #12 rows dropped
 # 27 rows dropped!
+
+#EXTRA:
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1320)])
+df_insurance=df_insurance[(df_insurance.CMV<=1320) | (df_insurance.CMV.isnull())] #11 rows dropped
+# 38 rows dropped
 
 #Outliers para Claims
 fig = px.histogram(df_insurance, x=df_insurance.Claims_Rate, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -160,7 +171,9 @@ fig.show()
 fig = px.box(df_insurance, y=df_insurance.Claims_Rate, color_discrete_sequence=['dimgrey'], template='plotly_white')
 fig.show()
 
-df_insurance=df_insurance[(df_insurance.Claims_Rate<3) | (df_insurance.Claims_Rate.isnull())] #1 row dropped
+# remover outliers e coloca-los num dataset
+outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Claims_Rate>3)])
+df_insurance=df_insurance[(df_insurance.Claims_Rate<=3) | (df_insurance.Claims_Rate.isnull())] #1 row dropped
 
 #Outliers para Motor
 fig = px.histogram(df_insurance, x=df_insurance.Motor, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -170,8 +183,7 @@ fig = px.box(df_insurance, y=df_insurance.Motor, color_discrete_sequence=['dimgr
 fig.show()
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Motor>2000)])
-
-df_insurance=df_insurance[(df_insurance.Motor<2000) | (df_insurance.Motor.isnull())] #3 rows dropped
+df_insurance=df_insurance[(df_insurance.Motor<=2000) | (df_insurance.Motor.isnull())] #3 rows dropped
 
 #Outliers para Health
 fig = px.histogram(df_insurance, x=df_insurance.Health, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -181,8 +193,13 @@ fig = px.box(df_insurance, y=df_insurance.Health, color_discrete_sequence=['dimg
 fig.show()
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>6000)])
+df_insurance=df_insurance[(df_insurance.Health<=6000) | (df_insurance.Health.isnull())] #1 row dropped
+################## não saiu nada
 
-df_insurance=df_insurance[(df_insurance.Health<6000) | (df_insurance.Health.isnull())] #1 row dropped
+#EXTRA:
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>420)])
+df_insurance=df_insurance[(df_insurance.Health<=420) | (df_insurance.Health.isnull())]
+# 3 rows dropped
 
 #Outliers para Life
 fig = px.histogram(df_insurance, x=df_insurance.Life, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -190,6 +207,14 @@ fig.show()
 
 fig = px.box(df_insurance, y=df_insurance.Life, color_discrete_sequence=['dimgrey'], template='plotly_white')
 fig.show()
+
+#EXTRA:
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>331)])
+df_insurance=df_insurance[(df_insurance.Life<=331) | (df_insurance.Life.isnull())] # 6 rows dropped
+
+#EXTRA:
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>285)])
+df_insurance=df_insurance[(df_insurance.Life<=285) | (df_insurance.Life.isnull())] # 11 rows dropped
 
 #Outliers para Household
 fig = px.histogram(df_insurance, x=df_insurance.Household, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -199,8 +224,12 @@ fig = px.box(df_insurance, y=df_insurance.Household, color_discrete_sequence=['d
 fig.show()
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1700)])
+df_insurance=df_insurance[(df_insurance.Household<=1700) | (df_insurance.Household.isnull())] # 5 rows dropped
 
-df_insurance=df_insurance[(df_insurance.Household<1700) | (df_insurance.Household.isnull())] # 5 rows dropped
+#EXTRA:
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1240)])
+df_insurance=df_insurance[(df_insurance.Household<=1240) | (df_insurance.Household.isnull())]
+# 20 rows dropped
 
 #Outliers para Work Compensations
 fig = px.histogram(df_insurance, x=df_insurance.Work_Compensation, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -209,11 +238,18 @@ fig.show()
 fig = px.box(df_insurance, y=df_insurance.Work_Compensation, color_discrete_sequence=['dimgrey'], template='plotly_white')
 fig.show()
 
-# os outliers positivos do work_compensation não vão para a df outliers_bons pq não são assim tão elevados
+# remover e append
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensation>400)])
+df_insurance=df_insurance[(df_insurance.Work_Compensation<=400) | (df_insurance.Work_Compensation.isnull())] # 3 rows dropped
 
-df_insurance=df_insurance[(df_insurance.Work_Compensation<400) | (df_insurance.Work_Compensation.isnull())] # 3 rows dropped
+# EXTRA:
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensation>300)])
+df_insurance=df_insurance[(df_insurance.Work_Compensation<=300) | (df_insurance.Work_Compensation.isnull())] 
+# 12 rows dropped
 
 # 42 rows dropped in total!!
+
+#COM OS EXTRA SÃO 104 (1%)
 
 #Descriptive statistics after outliers removal
 descriptive_o = df_insurance.describe().T
@@ -467,6 +503,17 @@ bottom, top = ax.get_ylim()
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
 del annot1, mask_annot, bottom, top
+
+
+# =============================================================================
+# OUTLIERS FOR NEW VARIABLES
+# =============================================================================
+outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<400)]) #20 rows dropped
+df_insurance = df_insurance[(df_insurance.Total_Premiums>=400) | (df_insurance.Total_Premiums.isnull())] #20 rows dropped
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Effort_Rate>0.265)]) #17 rows dropped
+df_insurance = df_insurance[(df_insurance.Effort_Rate<=0.265) | (df_insurance.Effort_Rate.isnull())]
+
 
 # =============================================================================
 # EXPLORATORY ANALYSIS - CATEGORICAL AND NUMERICAL VARIABLES
