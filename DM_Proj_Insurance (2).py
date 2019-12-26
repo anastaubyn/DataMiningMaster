@@ -8,8 +8,8 @@ import numpy as np
 # IMPORT DATABASE
 # =============================================================================
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 # Connect to the database
@@ -481,6 +481,21 @@ df_insurance['Negative']=abs(df_insurance['Negative'])
 
 df_insurance = df_insurance.drop(columns=['Monthly_Salary','First_Year'])
 
+# LOGS from original variables with long tails
+df_insurance['Life_log'] = np.log(df_insurance['Life']+abs(df_insurance['Life'].min())+1)
+df_insurance['Work_log'] = np.log(df_insurance['Work_Compensation']+abs(df_insurance['Work_Compensation'].min())+1)
+df_insurance['Household_log'] = np.log(df_insurance['Household']+abs(df_insurance['Household'].min())+1)
+
+# LOGS from new variables with long tails
+df_insurance['Total_Premiums_log'] = np.log(df_insurance['Total_Premiums'])
+df_insurance['Effort_Rate_log'] = np.log(df_insurance['Effort_Rate'])
+df_insurance['Life_Ratio_log'] = np.log(df_insurance['Life_Ratio']+0.01) # mínimo é 0
+df_insurance['Work_Ratio_log'] = np.log(df_insurance['Work_Ratio']+0.01) # mínimo é 0
+
+
+df_insurance = df_insurance.drop(columns=['Life','Work_Compensation','Household','Total_Premiums',
+                                          'Effort_Rate','Life_Ratio','Work_Ratio'])
+
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
 # =============================================================================
@@ -511,11 +526,18 @@ del annot1, mask_annot, bottom, top
 # =============================================================================
 # OUTLIERS FOR NEW VARIABLES
 # =============================================================================
-outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<400)]) #20 rows dropped
-df_insurance = df_insurance[(df_insurance.Total_Premiums>=400) | (df_insurance.Total_Premiums.isnull())] #20 rows dropped
+outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<490)]) #? rows dropped
+df_insurance = df_insurance[(df_insurance.Total_Premiums>=490) | (df_insurance.Total_Premiums.isnull())] #? rows dropped
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Total_Premiums>1520)]) #17 rows dropped
+df_insurance = df_insurance[(df_insurance.Total_Premiums<=1520) | (df_insurance.Total_Premiums.isnull())]
+
+
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Effort_Rate>0.265)]) #17 rows dropped
 df_insurance = df_insurance[(df_insurance.Effort_Rate<=0.265) | (df_insurance.Effort_Rate.isnull())]
+
+
 
 
 # =============================================================================
