@@ -8,8 +8,8 @@ import numpy as np
 # IMPORT DATABASE
 # =============================================================================
 
-#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 # Connect to the database
@@ -159,9 +159,9 @@ outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1500)])
 df_insurance = df_insurance[(df_insurance.CMV<=1500) | (df_insurance.CMV.isnull())] #12 rows dropped
 # 27 rows dropped!
 
-#EXTRA:
-#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1320)])
-#df_insurance=df_insurance[(df_insurance.CMV<=1320) | (df_insurance.CMV.isnull())] #11 rows dropped
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1320)])
+df_insurance=df_insurance[(df_insurance.CMV<=1320) | (df_insurance.CMV.isnull())] #11 rows dropped
 # 38 rows dropped
 
 #Outliers para Claims
@@ -195,10 +195,10 @@ fig.show()
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>6000)])
 df_insurance=df_insurance[(df_insurance.Health<=6000) | (df_insurance.Health.isnull())] #1 row dropped
 
-#EXTRA:
-#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>420)])
-#df_insurance=df_insurance[(df_insurance.Health<=420) | (df_insurance.Health.isnull())]
-# 3 rows dropped
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>410)])
+df_insurance=df_insurance[(df_insurance.Health<=410) | (df_insurance.Health.isnull())]
+# 4 rows dropped
 
 #Outliers para Life
 fig = px.histogram(df_insurance, x=df_insurance.Life, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -207,13 +207,13 @@ fig.show()
 fig = px.box(df_insurance, y=df_insurance.Life, color_discrete_sequence=['dimgrey'], template='plotly_white')
 fig.show()
 
-#EXTRA:
-#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>331)])
-#df_insurance=df_insurance[(df_insurance.Life<=331) | (df_insurance.Life.isnull())] # 6 rows dropped
 
-#EXTRA:
-#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>285)])
-#df_insurance=df_insurance[(df_insurance.Life<=285) | (df_insurance.Life.isnull())] # 11 rows dropped
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>331)])
+df_insurance=df_insurance[(df_insurance.Life<=331) | (df_insurance.Life.isnull())] # 6 rows dropped
+
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life>285)])
+df_insurance=df_insurance[(df_insurance.Life<=285) | (df_insurance.Life.isnull())] # 11 rows dropped
 
 #Outliers para Household
 fig = px.histogram(df_insurance, x=df_insurance.Household, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -225,9 +225,9 @@ fig.show()
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1700)])
 df_insurance=df_insurance[(df_insurance.Household<=1700) | (df_insurance.Household.isnull())] # 5 rows dropped
 
-#EXTRA:
-#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1240)])
-#df_insurance=df_insurance[(df_insurance.Household<=1240) | (df_insurance.Household.isnull())]
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1240)])
+df_insurance=df_insurance[(df_insurance.Household<=1240) | (df_insurance.Household.isnull())]
 # 20 rows dropped
 
 #Outliers para Work Compensations
@@ -241,14 +241,13 @@ fig.show()
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensation>400)])
 df_insurance=df_insurance[(df_insurance.Work_Compensation<=400) | (df_insurance.Work_Compensation.isnull())] # 3 rows dropped
 
-# EXTRA:
-#outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensation>300)])
-#df_insurance=df_insurance[(df_insurance.Work_Compensation<=300) | (df_insurance.Work_Compensation.isnull())] 
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensation>300)])
+df_insurance=df_insurance[(df_insurance.Work_Compensation<=300) | (df_insurance.Work_Compensation.isnull())] 
 # 12 rows dropped
 
-# 42 rows dropped in total!!!
 
-#COM OS EXTRA SÃO 104 (1%)
+# COM OS EXTRA SÃO 105 (1%)
 
 #Descriptive statistics after outliers removal
 descriptive_o = df_insurance.describe().T
@@ -266,13 +265,19 @@ correlacoes[np.abs(correlacoes)<0.05] = 0
 
 correlacoes = round(correlacoes,1)
 
+f, ax = plt.subplots(figsize=(9, 9))
 mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
-f, ax = plt.subplots(figsize=(10, 8))
-cmap = sb.diverging_palette(249, 163, as_cmap=True)
-sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, linewidths=.5, annot=True, vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
-bottom, top = ax.get_ylim()  
+
+mask_annot = np.absolute(correlacoes.values)>=0.65
+annot1 = np.where(mask_annot, correlacoes.values, np.full((12,12),""))
+cmap = sb.diverging_palette(49, 163, as_cmap=True)
+sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
+sb.set(font_scale=1.2)
+sb.set_style('white')
+bottom, top = ax.get_ylim()
 ax.set_ylim(bottom + 0.5, top - 0.5)
+
 
 # =============================================================================
 # MISSING VALUES TREATMENT
@@ -429,8 +434,9 @@ descriptive_an = df_insurance.describe().T
 descriptive_an['Nulls'] = df_insurance.shape[0] - descriptive_an['count']
 
 
-del complete, correlacoes, correlacoes_n, data_to_reg_complete, data_to_reg_incomplete, descriptive
-del descriptive_n, descriptive_o, imputed_Salary, imputed_values, incomplete, mask, temp_df, x, y
+del complete, correlacoes, data_to_reg_complete, data_to_reg_incomplete, descriptive
+del descriptive_n, descriptive_o, imputed_Salary, imputed_values, incomplete, mask, temp_df, x, yd
+del mask_annot, top, bottom, annot1
 
 
 # =============================================================================
@@ -478,9 +484,8 @@ df_insurance = df_insurance.drop(columns=['Monthly_Salary','First_Year'])
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
 # =============================================================================
-
 corr = df_insurance.drop(columns='Cust_ID')
-correlacoes = corr.corr(method='pearson')
+correlacoes = corr.corr(method='spearman')
 import seaborn as sb
 import matplotlib.pyplot as plt
 
@@ -503,7 +508,6 @@ ax.set_ylim(bottom + 0.5, top - 0.5)
 
 del annot1, mask_annot, bottom, top
 
-
 # =============================================================================
 # OUTLIERS FOR NEW VARIABLES
 # =============================================================================
@@ -517,12 +521,71 @@ df_insurance = df_insurance[(df_insurance.Effort_Rate<=0.265) | (df_insurance.Ef
 # =============================================================================
 # EXPLORATORY ANALYSIS - CATEGORICAL AND NUMERICAL VARIABLES
 # =============================================================================
-from ggplot import ggplot, aes, geom_boxplot
+# AREA BOXPLOTS
 
-ggplot(df_insurance, aes(x='Area', y='CMV')) + \
-    geom_boxplot(fill='darkseagreen4') + \
-    scale_color_brewer(palette = "Greens") + \
-    facet_wrap('Education', ncol=4)
+fig = plt.figure(figsize=(2,3))
+fig.set_size_inches(20,10)
+fig.subplots_adjust(hspace=0.3, wspace=0.3)
+
+gs = fig.add_gridspec(nrows=2,ncols=3)
+ax1 = fig.add_subplot(gs[0,0])
+ax2 = fig.add_subplot(gs[0,1])
+ax3 = fig.add_subplot(gs[0,2])
+ax4 = fig.add_subplot(gs[1,0])
+ax5 = fig.add_subplot(gs[1,1])
+ax6 = fig.add_subplot(gs[1,2])
+
+sns.boxplot(x="Area", y="CMV", data=df_insurance, ax=ax1, color='darkseagreen')
+sns.boxplot(x="Area", y="Claims_Rate", data=df_insurance, ax=ax2, color='darkseagreen')
+sns.boxplot(x="Area", y="Total_Premiums", data=df_insurance, ax=ax3, color='darkseagreen')
+sns.boxplot(x="Area", y="Client_Years", data=df_insurance, ax=ax4, color='darkseagreen')
+sns.boxplot(x="Area", y="Yearly_Salary", data=df_insurance, ax=ax5, color='darkseagreen')
+sns.boxplot(x="Area", y="Effort_Rate", data=df_insurance, ax=ax6, color='darkseagreen')
+
+
+# ALL BOXPLOTS 
+
+fig = plt.figure(figsize=(3,3))
+fig.set_size_inches(19,15)
+fig.subplots_adjust(hspace=0.4, wspace=0.3)
+
+gs = fig.add_gridspec(nrows=6, ncols=3)
+
+ax1 = fig.add_subplot(gs[0,0])
+ax2 = fig.add_subplot(gs[0,1])
+ax3 = fig.add_subplot(gs[0,2])
+ax4 = fig.add_subplot(gs[1,0])
+ax5 = fig.add_subplot(gs[1,1])
+ax6 = fig.add_subplot(gs[1,2])
+ax7 = fig.add_subplot(gs[2,0])
+ax8 = fig.add_subplot(gs[2,1])
+ax9 = fig.add_subplot(gs[2,2])
+ax10 = fig.add_subplot(gs[3,0])
+ax11 = fig.add_subplot(gs[3,1])
+
+sns.boxplot(x="Education", y="CMV", hue="Children", data=df_insurance, ax=ax1, palette='BuGn')
+ax1.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Claims_Rate", hue="Children", data=df_insurance, ax=ax2, palette='BuGn')
+ax2.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Total_Premiums", hue="Children", data=df_insurance, ax=ax3, palette='BuGn')
+ax3.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Client_Years", hue="Children", data=df_insurance, ax=ax4, palette='BuGn')
+ax4.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Yearly_Salary", hue="Children", data=df_insurance, ax=ax5, palette='BuGn')
+ax5.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Effort_Rate", hue="Children", data=df_insurance, ax=ax6, palette='BuGn')
+ax6.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Motor_Ratio", hue="Children", data=df_insurance, ax=ax7, palette='BuGn')
+ax7.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Household_Ratio", hue="Children", data=df_insurance, ax=ax8, palette='BuGn')
+ax8.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Health_Ratio", hue="Children", data=df_insurance, ax=ax9, palette='BuGn')
+ax9.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Life_Ratio", hue="Children", data=df_insurance, ax=ax10, palette='BuGn')
+ax10.legend(loc='upper right', title='Children')
+sns.boxplot(x="Education", y="Work_Ratio", hue="Children", data=df_insurance, ax=ax11, palette='BuGn')
+ax11.legend(loc='upper right', title='Children')
+
 
 
 
