@@ -8,9 +8,9 @@ import numpy as np
 # IMPORT DATABASE
 # =============================================================================
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
-#my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
+my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 # Connect to the database
 conn = sqlite3.connect(my_path)
@@ -253,12 +253,23 @@ df_insurance=df_insurance[(df_insurance.Work_Compensation<=300) | (df_insurance.
 descriptive_o = df_insurance.describe().T
 descriptive_o['Nulls'] = df_insurance.shape[0] - descriptive_o['count']
 
+
+grid = sns.PairGrid(data= df_insurance, vars = ['Monthly_Salary', 'CMV', 'Claims_Rate', 'Motor', 'Household',
+                                                'Health', 'Life', 'Work_Compensation'], height = 4)
+grid = grid.map_upper(plt.scatter, color = 'darkseagreen')
+grid = grid.map_diag(plt.hist, bins = 10, color = 'cadetblue')
+grid = grid.map_lower(plt.scatter, color = 'darkseagreen')
+
+
+cmap=sns.cubehelix_palette(8, start=.5, rot=-.75)
+sns.pairplot(df_insurance.drop(columns=['Cust_ID', 'Children', 'Area', 'Education']), palette=cmap)
+plt.show()
 # =============================================================================
 # CORRELATIONS
 # =============================================================================
-corr = df_insurance.drop(columns='Cust_ID')
-correlacoes = corr.corr(method='pearson')
-import seaborn as sb
+corr = df_insurance.drop(columns=['Cust_ID', 'Area'])
+correlacoes = corr.corr(method='spearman')
+
 import matplotlib.pyplot as plt
 
 correlacoes[np.abs(correlacoes)<0.05] = 0
@@ -271,10 +282,10 @@ mask[np.triu_indices_from(mask)] = True
 
 mask_annot = np.absolute(correlacoes.values)>=0.65
 annot1 = np.where(mask_annot, correlacoes.values, np.full((12,12),""))
-cmap = sb.diverging_palette(49, 163, as_cmap=True)
-sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
-sb.set(font_scale=1.2)
-sb.set_style('white')
+cmap = sns.diverging_palette(49, 163, as_cmap=True)
+sns.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
+sns.set(font_scale=1.2)
+sns.set_style('white')
 bottom, top = ax.get_ylim()
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
