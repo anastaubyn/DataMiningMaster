@@ -404,7 +404,7 @@ complete = df_insurance.loc[~df_insurance.Children.isnull()]
 
 clf = KNeighborsClassifier(n_neighbors=7, weights='distance', metric='euclidean')
 
-trained_model = clf.fit(complete.loc[:,['Monthly_Salary','Motor','Household','Health','Life','Work_Compensation']], complete.loc[:,'Education'])
+trained_model = clf.fit(complete.loc[:,['Monthly_Salary','Motor','Household','Health','Life','Work_Compensation']], complete.loc[:,'Children'])
 
 imputed_values = trained_model.predict(incomplete.drop(columns=['Cust_ID','First_Year','Education','Area','Children','CMV','Claims_Rate']))
 
@@ -435,7 +435,7 @@ descriptive_an['Nulls'] = df_insurance.shape[0] - descriptive_an['count']
 
 
 del complete, correlacoes, data_to_reg_complete, data_to_reg_incomplete, descriptive
-del descriptive_n, descriptive_o, imputed_Salary, imputed_values, incomplete, mask, temp_df, x, yd
+del descriptive_n, descriptive_o, imputed_Salary, imputed_values, incomplete, mask, temp_df, x, y
 del mask_annot, top, bottom, annot1
 
 
@@ -542,6 +542,8 @@ sns.boxplot(x="Area", y="Client_Years", data=df_insurance, ax=ax4, color='darkse
 sns.boxplot(x="Area", y="Yearly_Salary", data=df_insurance, ax=ax5, color='darkseagreen')
 sns.boxplot(x="Area", y="Effort_Rate", data=df_insurance, ax=ax6, color='darkseagreen')
 
+
+df_insurance.drop(columns='Area', inplace=True)
 
 # ALL BOXPLOTS 
 
