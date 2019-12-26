@@ -10,8 +10,8 @@ import plotly.express as px
 # =============================================================================
 
 
-#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
@@ -428,7 +428,7 @@ incomplete = pd.concat([incomplete, temp_df], axis=1, ignore_index=True)
 
 incomplete.columns=['Area','CMV','Claims_Rate','Cust_ID','Education','First_Year','Health','Household','Life','Monthly_Salary', 'Motor','Work_Compensation', 'Children']
 
-#drop the nulls values in education
+#drop the nulls values in children
 df_insurance.dropna(subset = ['Children'], inplace = True) # 13 rows dropped
 
 #concate the observations that had nulls and were imputed
@@ -459,7 +459,7 @@ df_insurance['Yearly_Salary']=12*df_insurance['Monthly_Salary']
 df_insurance['Total_Premiums']=df_insurance.loc[:,['Motor','Household','Health','Life','Work_Compensation']][df_insurance>0].sum(1)
 
 # DELETE ROWS WHERE TOTAL_PREMIUMS EQUALS 0
-df_insurance = df_insurance[df_insurance['Total_Premiums'] != 0]
+df_insurance = df_insurance[df_insurance['Total_Premiums'] != 0] # 12 rows dropped
 
 
 df_insurance['Effort_Rate']=df_insurance['Total_Premiums']/df_insurance['Yearly_Salary']
@@ -503,6 +503,17 @@ df_insurance['Work_Ratio_sqrt'] = np.sqrt(df_insurance['Work_Ratio'])
 df_insurance['Household_Ratio_sqrt'] = np.sqrt(df_insurance['Household_Ratio'])
 
 df_insurance = df_insurance.drop(columns=['Negative'])
+
+# =============================================================================
+# STANDARDIZATION
+# =============================================================================
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+
+df_std = scaler.fit_transform(df_insurance)
+df_std = pd.DataFrame(df_std, columns = df_insurance.columns)
+
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
 # =============================================================================
@@ -520,40 +531,40 @@ mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
 
 mask_annot = np.absolute(correlacoes.values)>=0.60
-annot1 = np.where(mask_annot, correlacoes.values, np.full((20,20),""))
+annot1 = np.where(mask_annot, correlacoes.values, np.full((26,26),""))
 cmap = sb.diverging_palette(49, 163, as_cmap=True)
 sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
-sb.set(font_scale=1.2)
+sb.set(font_scale=1)
 sb.set_style('white')
 bottom, top = ax.get_ylim()             
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
 del annot1, mask_annot, bottom, top, mask, corr
 
+
 # =============================================================================
 # OUTLIERS FOR NEW VARIABLES
 # =============================================================================
-outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<490)]) #? rows dropped
-df_insurance = df_insurance[(df_insurance.Total_Premiums>=490) | (df_insurance.Total_Premiums.isnull())] #? rows dropped
+outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<490)]) 
+df_insurance = df_insurance[(df_insurance.Total_Premiums>=490) | (df_insurance.Total_Premiums.isnull())] #34 rows dropped
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Total_Premiums>1520)]) #? rows dropped
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Total_Premiums>1520)]) #14 rows dropped
 df_insurance = df_insurance[(df_insurance.Total_Premiums<=1520) | (df_insurance.Total_Premiums.isnull())]
 
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Effort_Rate>0.265)]) #? rows dropped
-df_insurance = df_insurance[(df_insurance.Effort_Rate<=0.265) | (df_insurance.Effort_Rate.isnull())]
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Effort_Rate>0.225)]) #31 rows dropped
+df_insurance = df_insurance[(df_insurance.Effort_Rate<=0.225) | (df_insurance.Effort_Rate.isnull())]
 
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household_Ratio>0.8)]) #? rows dropped
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household_Ratio>0.8)]) #1 row dropped
 df_insurance = df_insurance[(df_insurance.Household_Ratio<=0.8) | (df_insurance.Household_Ratio.isnull())]
 
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health_Ratio>0.7)]) #? rows dropped
-df_insurance = df_insurance[(df_insurance.Health_Ratio<=0.7) | (df_insurance.Health_Ratio.isnull())]
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life_Ratio>0.4)]) #8 rows dropped
+df_insurance = df_insurance[(df_insurance.Life_Ratio<=0.4) | (df_insurance.Life_Ratio.isnull())]
 
-
-
-df_insurance = df_insurance.drop(columns=['Negative'])
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Ratio>0.4)]) #7 rows dropped
+df_insurance = df_insurance[(df_insurance.Work_Ratio<=0.4) | (df_insurance.Work_Ratio.isnull())]
 
 # =============================================================================
 # EXPLORATORY ANALYSIS - CATEGORICAL AND NUMERICAL VARIABLES
@@ -625,10 +636,9 @@ ax10.legend(loc='upper right', title='Children')
 sns.boxplot(x="Education", y="Work_Ratio", hue="Children", data=df_insurance, ax=ax11, palette='BuGn')
 ax11.legend(loc='upper right', title='Children')
 
-# =============================================================================
-# CLUSTERING ALGORITHMS
-# =============================================================================
-
+## =============================================================================
+## CLUSTERING ALGORITHMS
+## =============================================================================
 
 # =============================================================================
 # K - PROTOTYPES
@@ -715,12 +725,6 @@ plt.show()
 # ================================================
 # SOM + HIERARCHICAL
 # ================================================
-
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-
-df_std = scaler.fit_transform(df_insurance)
-df_std = pd.DataFrame(df_std, columns = df_std.columns)
 
 X = df_std.values
 
