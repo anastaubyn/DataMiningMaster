@@ -10,13 +10,9 @@ import plotly.express as px
 # =============================================================================
 
 #my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-<<<<<<< HEAD
 my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
-=======
-#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
-my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
->>>>>>> 625ba078d4db6eef51d898a7c8c7e8a494e2c72f
+
 
 # Connect to the database
 conn = sqlite3.connect(my_path)
@@ -493,21 +489,19 @@ df_insurance['Negative']=abs(df_insurance['Negative'])
 
 df_insurance = df_insurance.drop(columns=['Monthly_Salary','First_Year'])
 
-# LOGS from original variables with long tails
-df_insurance['Life_log'] = np.log(df_insurance['Life']+abs(df_insurance['Life'].min())+1)
-df_insurance['Work_log'] = np.log(df_insurance['Work_Compensation']+abs(df_insurance['Work_Compensation'].min())+1)
-df_insurance['Household_log'] = np.log(df_insurance['Household']+abs(df_insurance['Household'].min())+1)
+# SQRT's from original variables with long tails
+df_insurance['Life_sqrt'] = np.sqrt(df_insurance['Life']+abs(df_insurance['Life'].min()))
+df_insurance['Work_sqrt'] = np.sqrt(df_insurance['Work_Compensation']+abs(df_insurance['Work_Compensation'].min()))
+df_insurance['Household_sqrt'] = np.sqrt(df_insurance['Household']+abs(df_insurance['Household'].min()))
 
-# LOGS from new variables with long tails
-df_insurance['Total_Premiums_log'] = np.log(df_insurance['Total_Premiums'])
-df_insurance['Effort_Rate_log'] = np.log(df_insurance['Effort_Rate'])
-df_insurance['Life_Ratio_log'] = np.log(df_insurance['Life_Ratio']+0.01) # mínimo é 0
-df_insurance['Work_Ratio_log'] = np.log(df_insurance['Work_Ratio']+0.01) # mínimo é 0
+# SQRT's from new variables with long tails
+#df_insurance['Total_Premiums_sqrt'] = np.sqrt(df_insurance['Total_Premiums']) não vale a pena
+df_insurance['Effort_Rate_sqrt'] = np.sqrt(df_insurance['Effort_Rate'])
+df_insurance['Life_Ratio_sqrt'] = np.sqrt(df_insurance['Life_Ratio'])
+df_insurance['Work_Ratio_sqrt'] = np.sqrt(df_insurance['Work_Ratio']) 
+df_insurance['Household_Ratio_sqrt'] = np.sqrt(df_insurance['Household_Ratio'])
 
-
-df_insurance = df_insurance.drop(columns=['Life','Work_Compensation','Household','Total_Premiums',
-                                          'Effort_Rate','Life_Ratio','Work_Ratio'])
-
+df_insurance = df_insurance.drop(columns=['Negative'])
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
 # =============================================================================
@@ -525,7 +519,7 @@ mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
 
 mask_annot = np.absolute(correlacoes.values)>=0.60
-annot1 = np.where(mask_annot, correlacoes.values, np.full((21,21),""))
+annot1 = np.where(mask_annot, correlacoes.values, np.full((20,20),""))
 cmap = sb.diverging_palette(49, 163, as_cmap=True)
 sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
 sb.set(font_scale=1.2)
@@ -541,16 +535,24 @@ del annot1, mask_annot, bottom, top
 outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<490)]) #? rows dropped
 df_insurance = df_insurance[(df_insurance.Total_Premiums>=490) | (df_insurance.Total_Premiums.isnull())] #? rows dropped
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Total_Premiums>1520)]) #17 rows dropped
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Total_Premiums>1520)]) #? rows dropped
 df_insurance = df_insurance[(df_insurance.Total_Premiums<=1520) | (df_insurance.Total_Premiums.isnull())]
 
 
-
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Effort_Rate>0.265)]) #17 rows dropped
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Effort_Rate>0.265)]) #? rows dropped
 df_insurance = df_insurance[(df_insurance.Effort_Rate<=0.265) | (df_insurance.Effort_Rate.isnull())]
 
 
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household_Ratio>0.8)]) #? rows dropped
+df_insurance = df_insurance[(df_insurance.Household_Ratio<=0.8) | (df_insurance.Household_Ratio.isnull())]
 
+
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health_Ratio>0.7)]) #? rows dropped
+df_insurance = df_insurance[(df_insurance.Health_Ratio<=0.7) | (df_insurance.Health_Ratio.isnull())]
+
+
+
+df_insurance = df_insurance.drop(columns=['Negative'])
 
 # =============================================================================
 # EXPLORATORY ANALYSIS - CATEGORICAL AND NUMERICAL VARIABLES
