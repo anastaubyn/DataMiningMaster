@@ -428,7 +428,7 @@ incomplete = pd.concat([incomplete, temp_df], axis=1, ignore_index=True)
 
 incomplete.columns=['Area','CMV','Claims_Rate','Cust_ID','Education','First_Year','Health','Household','Life','Monthly_Salary', 'Motor','Work_Compensation', 'Children']
 
-#drop the nulls values in education
+#drop the nulls values in children
 df_insurance.dropna(subset = ['Children'], inplace = True) # 13 rows dropped
 
 #concate the observations that had nulls and were imputed
@@ -459,7 +459,7 @@ df_insurance['Yearly_Salary']=12*df_insurance['Monthly_Salary']
 df_insurance['Total_Premiums']=df_insurance.loc[:,['Motor','Household','Health','Life','Work_Compensation']][df_insurance>0].sum(1)
 
 # DELETE ROWS WHERE TOTAL_PREMIUMS EQUALS 0
-df_insurance = df_insurance[df_insurance['Total_Premiums'] != 0]
+df_insurance = df_insurance[df_insurance['Total_Premiums'] != 0] # 12 rows dropped
 
 
 df_insurance['Effort_Rate']=df_insurance['Total_Premiums']/df_insurance['Yearly_Salary']
@@ -533,27 +533,26 @@ del annot1, mask_annot, bottom, top, mask, corr
 # =============================================================================
 # OUTLIERS FOR NEW VARIABLES
 # =============================================================================
-outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<490)]) #? rows dropped
-df_insurance = df_insurance[(df_insurance.Total_Premiums>=490) | (df_insurance.Total_Premiums.isnull())] #? rows dropped
+outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<490)]) 
+df_insurance = df_insurance[(df_insurance.Total_Premiums>=490) | (df_insurance.Total_Premiums.isnull())] #34 rows dropped
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Total_Premiums>1520)]) #? rows dropped
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Total_Premiums>1520)]) #14 rows dropped
 df_insurance = df_insurance[(df_insurance.Total_Premiums<=1520) | (df_insurance.Total_Premiums.isnull())]
 
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Effort_Rate>0.265)]) #? rows dropped
-df_insurance = df_insurance[(df_insurance.Effort_Rate<=0.265) | (df_insurance.Effort_Rate.isnull())]
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Effort_Rate>0.225)]) #31 rows dropped
+df_insurance = df_insurance[(df_insurance.Effort_Rate<=0.225) | (df_insurance.Effort_Rate.isnull())]
 
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household_Ratio>0.8)]) #? rows dropped
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household_Ratio>0.8)]) #1 row dropped
 df_insurance = df_insurance[(df_insurance.Household_Ratio<=0.8) | (df_insurance.Household_Ratio.isnull())]
 
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health_Ratio>0.7)]) #? rows dropped
-df_insurance = df_insurance[(df_insurance.Health_Ratio<=0.7) | (df_insurance.Health_Ratio.isnull())]
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Life_Ratio>0.4)]) #8 rows dropped
+df_insurance = df_insurance[(df_insurance.Life_Ratio<=0.4) | (df_insurance.Life_Ratio.isnull())]
 
-
-
-df_insurance = df_insurance.drop(columns=['Negative'])
+outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Ratio>0.4)]) #7 rows dropped
+df_insurance = df_insurance[(df_insurance.Work_Ratio<=0.4) | (df_insurance.Work_Ratio.isnull())]
 
 # =============================================================================
 # EXPLORATORY ANALYSIS - CATEGORICAL AND NUMERICAL VARIABLES
