@@ -10,8 +10,8 @@ import plotly.express as px
 # =============================================================================
 
 
-#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
@@ -503,6 +503,17 @@ df_insurance['Work_Ratio_sqrt'] = np.sqrt(df_insurance['Work_Ratio'])
 df_insurance['Household_Ratio_sqrt'] = np.sqrt(df_insurance['Household_Ratio'])
 
 df_insurance = df_insurance.drop(columns=['Negative'])
+
+# =============================================================================
+# STANDARDIZATION
+# =============================================================================
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+
+df_std = scaler.fit_transform(df_insurance)
+df_std = pd.DataFrame(df_std, columns = df_std.columns)
+
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
 # =============================================================================
@@ -520,15 +531,16 @@ mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
 
 mask_annot = np.absolute(correlacoes.values)>=0.60
-annot1 = np.where(mask_annot, correlacoes.values, np.full((20,20),""))
+annot1 = np.where(mask_annot, correlacoes.values, np.full((26,26),""))
 cmap = sb.diverging_palette(49, 163, as_cmap=True)
 sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
-sb.set(font_scale=1.2)
+sb.set(font_scale=1)
 sb.set_style('white')
 bottom, top = ax.get_ylim()             
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
 del annot1, mask_annot, bottom, top, mask, corr
+
 
 # =============================================================================
 # OUTLIERS FOR NEW VARIABLES
@@ -551,9 +563,6 @@ df_insurance = df_insurance[(df_insurance.Household_Ratio<=0.8) | (df_insurance.
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health_Ratio>0.7)]) #? rows dropped
 df_insurance = df_insurance[(df_insurance.Health_Ratio<=0.7) | (df_insurance.Health_Ratio.isnull())]
 
-
-
-df_insurance = df_insurance.drop(columns=['Negative'])
 
 # =============================================================================
 # EXPLORATORY ANALYSIS - CATEGORICAL AND NUMERICAL VARIABLES
@@ -625,10 +634,9 @@ ax10.legend(loc='upper right', title='Children')
 sns.boxplot(x="Education", y="Work_Ratio", hue="Children", data=df_insurance, ax=ax11, palette='BuGn')
 ax11.legend(loc='upper right', title='Children')
 
-# =============================================================================
-# CLUSTERING ALGORITHMS
-# =============================================================================
-
+## =============================================================================
+## CLUSTERING ALGORITHMS
+## =============================================================================
 
 # =============================================================================
 # K - PROTOTYPES
@@ -655,12 +663,6 @@ centroids['Children']=pd.DataFrame(centro[1]).loc[:,1]
 # ================================================
 # SOM + HIERARCHICAL
 # ================================================
-
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-
-df_std = scaler.fit_transform(df_insurance)
-df_std = pd.DataFrame(df_std, columns = df_std.columns)
 
 X = df_std.values
 
