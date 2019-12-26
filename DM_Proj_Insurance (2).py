@@ -512,7 +512,7 @@ from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 
 df_std = scaler.fit_transform(df_insurance)
-df_std = pd.DataFrame(df_std, columns = df_std.columns)
+df_std = pd.DataFrame(df_std, columns = df_insurance.columns)
 
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
