@@ -628,6 +628,29 @@ ax11.legend(loc='upper right', title='Children')
 # CLUSTERING ALGORITHMS
 # =============================================================================
 
+
+# =============================================================================
+# K - PROTOTYPES
+# =============================================================================
+
+#pip install kmodes
+from kmodes.kprototypes import KPrototypes as KP
+
+kproto = df_insurance[['Cust_ID','Yearly_Salary', 'Education', 'Children']]
+kproto.reset_index(drop=True, inplace=True)
+
+kp = KP(n_clusters=15, init='Huang', verbose=2)
+clusters = kp.fit_predict(VE_Cat[['Yearly_Salary','Education','Children']], categorical=[1,2])
+
+centro=kp.cluster_centroids_
+kproto['Label']=kp.labels_
+kproto.Label = kproto.Label.apply(pd.to_numeric)
+
+centroids=pd.DataFrame()
+centroids['Yearly_Salary']=pd.DataFrame(centro[0]).loc[:,0]
+centroids['Education']=pd.DataFrame(centro[1]).loc[:,0]
+centroids['Children']=pd.DataFrame(centro[1]).loc[:,1]
+
 # ================================================
 # SOM + HIERARCHICAL
 # ================================================
