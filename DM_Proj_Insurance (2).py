@@ -652,6 +652,9 @@ ax11.legend(loc='upper right', title='Children')
 
 #pip install kmodes
 from kmodes.kprototypes import KPrototypes as KP
+from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.cluster import hierarchy
 
 kproto = df_insurance[['Cust_ID','Yearly_Salary', 'Education', 'Children']]
 kproto.reset_index(drop=True, inplace=True)
@@ -667,6 +670,63 @@ centroids=pd.DataFrame()
 centroids['Yearly_Salary']=pd.DataFrame(centro[0]).loc[:,0]
 centroids['Education']=pd.DataFrame(centro[1]).loc[:,0]
 centroids['Children']=pd.DataFrame(centro[1]).loc[:,1]
+
+del centro, kp, kproto, clusters
+
+Z = linkage(centroids, method = "ward")
+
+hierarchy.set_link_color_palette(['darkseagreen','cadetblue', 'seagreen', 'mediumseagreen', 'c','mediumturquoise','turquoise'])
+
+fig = plt.figure(figsize=(10, 20))
+ax2 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
+Z = hierarchy.linkage(centroids, method='ward')
+
+dendrogram(Z,
+           truncate_mode="lastp",
+           p=40,
+           orientation ="top" ,
+           leaf_rotation=45.,
+           leaf_font_size=10.,
+           show_contracted=True,
+           show_leaf_counts=True)
+cur_axes = plt.gca()
+cur_axes.axes.get_xaxis().set_visible(False)
+cur_axes.axes.get_yaxis().set_visible(False)
+
+
+ax2.set_xticks([])
+ax2.set_yticks([])
+ax2.axis('off')
+
+Hclustering = AgglomerativeClustering(n_clusters=3, affinity="euclidean", linkage="ward")
+labels = pd.DataFrame(HC.labels_)
+labels.columns =  ['Socio-Demo']
+
+df_insurance.reset_index(drop=True, inplace=True)
+df_insurance = pd.concat([df_insurance, labels], axis = 1)
+
+del Z, fig, ax2, centroids, cur_axes, Hclustering, labels
+
+fig, axs = plt.subplots(3, 3)
+axs[0, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==0], color='darkseagreen')
+axs[0, 0].set_title('Salary for First Cluster')
+axs[0, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==0], color='cadetblue')
+axs[0, 1].set_title('Education for First Cluster')
+axs[0, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==0], color='tan')
+axs[0, 2].set_title('Children for First Cluster')
+axs[1, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==1], color='darkseagreen')
+axs[1, 0].set_title('Salary for Second Cluster')
+axs[1, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==1], color='cadetblue')
+axs[1, 1].set_title('Education for Second Cluster')
+axs[1, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==1], color='tan')
+axs[1, 2].set_title('Children for Second Cluster')
+axs[2, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==2], color='darkseagreen')
+axs[2, 0].set_title('Salary for Third Cluster')
+axs[2, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==2], color='cadetblue')
+axs[2, 1].set_title('Education for Third Cluster')
+axs[2, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==2], color='tan')
+axs[2, 2].set_title('Children for Third Cluster')
+plt.show()
 
 # ================================================
 # SOM + HIERARCHICAL
