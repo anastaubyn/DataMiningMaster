@@ -10,13 +10,9 @@ import plotly.express as px
 # =============================================================================
 
 #my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-<<<<<<< HEAD
-my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
-#my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
-=======
 #my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
->>>>>>> 625ba078d4db6eef51d898a7c8c7e8a494e2c72f
+
 
 # Connect to the database
 conn = sqlite3.connect(my_path)
@@ -511,7 +507,7 @@ df_insurance = df_insurance.drop(columns=['Life','Work_Compensation','Household'
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
 # =============================================================================
-corr = df_insurance.drop(columns='Cust_ID')
+corr = df_insurance.drop(columns=['Cust_ID', 'Area'])
 correlacoes = corr.corr(method='spearman')
 import seaborn as sb
 import matplotlib.pyplot as plt
@@ -525,7 +521,7 @@ mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
 
 mask_annot = np.absolute(correlacoes.values)>=0.60
-annot1 = np.where(mask_annot, correlacoes.values, np.full((21,21),""))
+annot1 = np.where(mask_annot, correlacoes.values, np.full((20,20),""))
 cmap = sb.diverging_palette(49, 163, as_cmap=True)
 sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
 sb.set(font_scale=1.2)
