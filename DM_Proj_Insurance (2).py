@@ -511,8 +511,14 @@ df_insurance = df_insurance.drop(columns=['Negative'])
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 
-df_std = scaler.fit_transform(df_insurance)
-df_std = pd.DataFrame(df_std, columns = df_insurance.columns)
+df_std = scaler.fit_transform(df_insurance[['Yearly_Salary','CMV','Claims_Rate','Client_Years',
+                                            'Effort_Rate','Effort_Rate_sqrt','Total_Premiums']])
+df_std = pd.DataFrame(df_std, columns = ['Yearly_Salary_std','CMV_std','Claims_Rate_std',
+                                         'Client_Years_std','Effort_Rate_std',
+                                         'Effort_Rate_sqrt_std','Total_Premiums_std'])
+
+df_insurance = df_insurance.join(df_std)
+df_insurance.reset_index(inplace=True)
 
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
@@ -667,7 +673,6 @@ centroids['Children']=pd.DataFrame(centro[1]).loc[:,1]
 # ================================================
 
 X = df_std.values
-
 
 names = ['clothes', 'kitchen', 'small_appliances', 'toys', 'house_keeping']
 sm = SOMFactory().build(data = X,
