@@ -3,14 +3,20 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import plotly.express as px
 
 # =============================================================================
 # IMPORT DATABASE
 # =============================================================================
 
 #my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+<<<<<<< HEAD
 my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
+=======
+#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
+>>>>>>> 625ba078d4db6eef51d898a7c8c7e8a494e2c72f
 
 # Connect to the database
 conn = sqlite3.connect(my_path)
@@ -73,6 +79,8 @@ df_insurance.shape[0]
 df_insurance.drop_duplicates(subset = df_insurance.columns[1:], inplace = True)
 df_insurance.shape[0]
 
+del duplicated
+
 #Descriptive statistics
 descriptive = df_insurance.describe().T
 descriptive['Nulls'] = df_insurance.shape[0] - descriptive['count']
@@ -124,7 +132,6 @@ del df_insurance['Coherence_Birthday'], df_insurance['Coherence_First1'], df_ins
 # =============================================================================
 # OUTLIERS
 # =============================================================================
-import plotly.express as px
 
 #Outliers para Salary
 fig = px.histogram(df_insurance, x=df_insurance.Monthly_Salary, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -136,6 +143,7 @@ fig.show()
 outliers_bons = df_insurance[(df_insurance.Monthly_Salary>30000)]
 df_insurance=df_insurance[(df_insurance.Monthly_Salary<=30000) | (df_insurance.Monthly_Salary.isnull())] #2 rows dropped
 #diff=df_insurance[~df_insurance.index.isin(df_insurance1.index)]
+
 
 #Outliers para CMV
 fig = px.histogram(df_insurance, x=df_insurance.CMV, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -157,12 +165,12 @@ df_insurance=df_insurance[(df_insurance.CMV>=-420) | (df_insurance.CMV.isnull())
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1500)])
 df_insurance = df_insurance[(df_insurance.CMV<=1500) | (df_insurance.CMV.isnull())] #12 rows dropped
-# 27 rows dropped!
-
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.CMV>1320)])
 df_insurance=df_insurance[(df_insurance.CMV<=1320) | (df_insurance.CMV.isnull())] #11 rows dropped
-# 38 rows dropped
+
+# 38 rows dropped total in this variable
+
 
 #Outliers para Claims
 fig = px.histogram(df_insurance, x=df_insurance.Claims_Rate, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -175,6 +183,7 @@ fig.show()
 outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Claims_Rate>3)])
 df_insurance=df_insurance[(df_insurance.Claims_Rate<=3) | (df_insurance.Claims_Rate.isnull())] #1 row dropped
 
+
 #Outliers para Motor
 fig = px.histogram(df_insurance, x=df_insurance.Motor, color_discrete_sequence=['darkseagreen'], template='plotly_white')
 fig.show()
@@ -185,6 +194,7 @@ fig.show()
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Motor>2000)])
 df_insurance=df_insurance[(df_insurance.Motor<=2000) | (df_insurance.Motor.isnull())] #3 rows dropped
 
+
 #Outliers para Health
 fig = px.histogram(df_insurance, x=df_insurance.Health, color_discrete_sequence=['darkseagreen'], template='plotly_white')
 fig.show()
@@ -192,13 +202,9 @@ fig.show()
 fig = px.box(df_insurance, y=df_insurance.Health, color_discrete_sequence=['dimgrey'], template='plotly_white')
 fig.show()
 
-outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>6000)])
-df_insurance=df_insurance[(df_insurance.Health<=6000) | (df_insurance.Health.isnull())] #1 row dropped
-
-
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Health>410)])
-df_insurance=df_insurance[(df_insurance.Health<=410) | (df_insurance.Health.isnull())]
-# 4 rows dropped
+df_insurance=df_insurance[(df_insurance.Health<=410) | (df_insurance.Health.isnull())] # 5 rows dropped
+
 
 #Outliers para Life
 fig = px.histogram(df_insurance, x=df_insurance.Life, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -227,8 +233,7 @@ df_insurance=df_insurance[(df_insurance.Household<=1700) | (df_insurance.Househo
 
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Household>1240)])
-df_insurance=df_insurance[(df_insurance.Household<=1240) | (df_insurance.Household.isnull())]
-# 20 rows dropped
+df_insurance=df_insurance[(df_insurance.Household<=1240) | (df_insurance.Household.isnull())] # 20 rows dropped
 
 #Outliers para Work Compensations
 fig = px.histogram(df_insurance, x=df_insurance.Work_Compensation, color_discrete_sequence=['darkseagreen'], template='plotly_white')
@@ -243,22 +248,29 @@ df_insurance=df_insurance[(df_insurance.Work_Compensation<=400) | (df_insurance.
 
 
 outliers_bons = outliers_bons.append(df_insurance[(df_insurance.Work_Compensation>300)])
-df_insurance=df_insurance[(df_insurance.Work_Compensation<=300) | (df_insurance.Work_Compensation.isnull())] 
-# 12 rows dropped
+df_insurance=df_insurance[(df_insurance.Work_Compensation<=300) | (df_insurance.Work_Compensation.isnull())] # 12 rows dropped
 
 
-# COM OS EXTRA SÃO 105 (1%)
+# TOTAL REMOVED 106 (1%)
 
 #Descriptive statistics after outliers removal
 descriptive_o = df_insurance.describe().T
 descriptive_o['Nulls'] = df_insurance.shape[0] - descriptive_o['count']
 
+
+grid = sns.PairGrid(data= df_insurance, vars = ['Monthly_Salary', 'CMV', 'Claims_Rate', 'Motor', 'Household',
+                                                'Health', 'Life', 'Work_Compensation'], height = 4)
+grid = grid.map_upper(plt.scatter, color = 'darkseagreen')
+grid = grid.map_diag(plt.hist, bins = 10, color = 'cadetblue')
+grid = grid.map_lower(plt.scatter, color = 'darkseagreen')
+
+
 # =============================================================================
 # CORRELATIONS
 # =============================================================================
-corr = df_insurance.drop(columns='Cust_ID')
-correlacoes = corr.corr(method='pearson')
-import seaborn as sb
+corr = df_insurance.drop(columns=['Cust_ID', 'Area'])
+correlacoes = corr.corr(method='spearman')
+
 import matplotlib.pyplot as plt
 
 correlacoes[np.abs(correlacoes)<0.05] = 0
@@ -269,12 +281,12 @@ f, ax = plt.subplots(figsize=(9, 9))
 mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
 
-mask_annot = np.absolute(correlacoes.values)>=0.65
-annot1 = np.where(mask_annot, correlacoes.values, np.full((12,12),""))
-cmap = sb.diverging_palette(49, 163, as_cmap=True)
-sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
-sb.set(font_scale=1.2)
-sb.set_style('white')
+mask_annot = np.absolute(correlacoes.values)>=0.6
+annot1 = np.where(mask_annot, correlacoes.values, np.full((11,11),""))
+cmap = sns.diverging_palette(49, 163, as_cmap=True)
+sns.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
+sns.set(font_scale=1.2)
+sns.set_style('white')
 bottom, top = ax.get_ylim()
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
