@@ -73,6 +73,8 @@ df_insurance.shape[0]
 df_insurance.drop_duplicates(subset = df_insurance.columns[1:], inplace = True)
 df_insurance.shape[0]
 
+del duplicated
+
 #Descriptive statistics
 descriptive = df_insurance.describe().T
 descriptive['Nulls'] = df_insurance.shape[0] - descriptive['count']
@@ -261,9 +263,6 @@ grid = grid.map_diag(plt.hist, bins = 10, color = 'cadetblue')
 grid = grid.map_lower(plt.scatter, color = 'darkseagreen')
 
 
-cmap=sns.cubehelix_palette(8, start=.5, rot=-.75)
-sns.pairplot(df_insurance.drop(columns=['Cust_ID', 'Children', 'Area', 'Education']), palette=cmap)
-plt.show()
 # =============================================================================
 # CORRELATIONS
 # =============================================================================
@@ -280,8 +279,8 @@ f, ax = plt.subplots(figsize=(9, 9))
 mask = np.zeros_like(correlacoes, dtype=np.bool)
 mask[np.triu_indices_from(mask)] = True
 
-mask_annot = np.absolute(correlacoes.values)>=0.65
-annot1 = np.where(mask_annot, correlacoes.values, np.full((12,12),""))
+mask_annot = np.absolute(correlacoes.values)>=0.6
+annot1 = np.where(mask_annot, correlacoes.values, np.full((11,11),""))
 cmap = sns.diverging_palette(49, 163, as_cmap=True)
 sns.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
 sns.set(font_scale=1.2)
