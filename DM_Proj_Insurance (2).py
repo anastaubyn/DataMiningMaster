@@ -505,22 +505,6 @@ df_insurance['Household_Ratio_sqrt'] = np.sqrt(df_insurance['Household_Ratio'])
 df_insurance = df_insurance.drop(columns=['Negative'])
 
 # =============================================================================
-# STANDARDIZATION
-# =============================================================================
-
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-
-df_std = scaler.fit_transform(df_insurance[['Yearly_Salary','CMV','Claims_Rate','Client_Years',
-                                            'Effort_Rate','Effort_Rate_sqrt','Total_Premiums']])
-df_std = pd.DataFrame(df_std, columns = ['Yearly_Salary_std','CMV_std','Claims_Rate_std',
-                                         'Client_Years_std','Effort_Rate_std',
-                                         'Effort_Rate_sqrt_std','Total_Premiums_std'])
-
-df_insurance = df_insurance.join(df_std)
-df_insurance.reset_index(inplace=True)
-
-# =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
 # =============================================================================
 corr = df_insurance.drop(columns=['Cust_ID', 'Area'])
@@ -546,6 +530,21 @@ bottom, top = ax.get_ylim()
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
 del annot1, mask_annot, bottom, top, mask, corr
+
+# =============================================================================
+# STANDARDIZATION
+# =============================================================================
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+
+df_std = scaler.fit_transform(df_insurance[['Yearly_Salary','CMV','Claims_Rate','Client_Years',
+                                            'Effort_Rate','Effort_Rate_sqrt','Total_Premiums']])
+df_std = pd.DataFrame(df_std, columns = ['Yearly_Salary_std','CMV_std','Claims_Rate_std',
+                                         'Client_Years_std','Effort_Rate_std',
+                                         'Effort_Rate_sqrt_std','Total_Premiums_std'])
+
+df_insurance = df_insurance.join(df_std)
 
 
 # =============================================================================
@@ -728,13 +727,16 @@ axs[2, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==2], colo
 axs[2, 2].set_title('Children for Third Cluster')
 plt.show()
 
-# ================================================
+# =============================================================================
 # SOM + HIERARCHICAL
-# ================================================
+# =============================================================================
+from sompy.sompy import SOMFactory
+from sompy.visualization.plot_tools import plot_hex_map
+import logging
 
-X = df_std.values
+X = df_insurance[['Children', 'Education', 'Yearly_Salary']].values
 
-names = ['clothes', 'kitchen', 'small_appliances', 'toys', 'house_keeping']
+names = ['Children', 'Education', 'Yearly_Salary']
 sm = SOMFactory().build(data = X,
                mapsize=(10,10),
                normalization = 'var',
@@ -747,14 +749,13 @@ sm.train(n_job=4, verbose='info',
          train_rough_len=30,
          train_finetune_len=100)
 
-
-final_clusters = pd.DataFrame(sm._data, columns = [])
+final_clusters = pd.DataFrame(sm._data, columns = ['Children', 'Education', 'Yearly_Salary'])
 
 my_labels = pd.DataFrame(sm._bmu[0])
     
 final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
 
-final_clusters.columns = [,'Lables']
+final_clusters.columns = ['Children', 'Education', 'Yearly_Salary','Lables']
 
 from sompy.visualization.mapview import View2DPacked
 view2D  = View2DPacked(10,10,"", text_size=7)
