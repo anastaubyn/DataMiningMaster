@@ -9,6 +9,7 @@ import plotly.express as px
 # IMPORT DATABASE
 # =============================================================================
 
+
 #my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
 my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
@@ -505,7 +506,7 @@ df_insurance = df_insurance.drop(columns=['Negative'])
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
 # =============================================================================
-corr = df_insurance.drop(columns='Cust_ID')
+corr = df_insurance.drop(columns=['Cust_ID', 'Area'])
 correlacoes = corr.corr(method='spearman')
 import seaborn as sb
 import matplotlib.pyplot as plt
@@ -527,7 +528,7 @@ sb.set_style('white')
 bottom, top = ax.get_ylim()             
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
-del annot1, mask_annot, bottom, top
+del annot1, mask_annot, bottom, top, mask, corr
 
 # =============================================================================
 # OUTLIERS FOR NEW VARIABLES
@@ -624,7 +625,90 @@ ax10.legend(loc='upper right', title='Children')
 sns.boxplot(x="Education", y="Work_Ratio", hue="Children", data=df_insurance, ax=ax11, palette='BuGn')
 ax11.legend(loc='upper right', title='Children')
 
+# =============================================================================
+# CLUSTERING ALGORITHMS
+# =============================================================================
 
+# ================================================
+# SOM + HIERARCHICAL
+# ================================================
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+
+df_std = scaler.fit_transform(df_insurance)
+df_std = pd.DataFrame(df_std, columns = df_std.columns)
+
+X = df_std.values
+
+
+names = ['clothes', 'kitchen', 'small_appliances', 'toys', 'house_keeping']
+sm = SOMFactory().build(data = X,
+               mapsize=(10,10),
+               normalization = 'var',
+               initialization='random', #'random', 'pca'
+               component_names=names,
+               lattice='hexa', #'rect','hexa'
+               training = 'seq') #'seq','batch'
+
+sm.train(n_job=4, verbose='info',
+         train_rough_len=30,
+         train_finetune_len=100)
+
+
+final_clusters = pd.DataFrame(sm._data, columns = [])
+
+my_labels = pd.DataFrame(sm._bmu[0])
+    
+final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
+
+final_clusters.columns = [,'Lables']
+
+from sompy.visualization.mapview import View2DPacked
+view2D  = View2DPacked(10,10,"", text_size=7)
+view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
+plt.show()
+
+from sompy.visualization.mapview import View2D
+view2D  = View2D(10,10,"", text_size=7)
+view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
+plt.show()
+
+from sompy.visualization.bmuhits import BmuHitsView
+vhts  = BmuHitsView(12,12,"Hits Map",text_size=7)
+vhts.show(sm, anotate=True, onlyzeros=False, labelsize=10, cmap="autumn", logaritmic=False)
+
+
+# Apply Hierarchical Clustering in the SOM results
+
+# We need scipy to plot the dendrogram 
+import scipy
+from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.cluster import hierarchy
+from pylab import rcParams
+
+# The final result will use the sklearn
+import sklearn
+from sklearn.cluster import AgglomerativeClustering
+
+plt.figure(figsize=(10,5))
+plt.style.use('seaborn-whitegrid')
+
+#Scipy generate dendrograms
+#https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+Z = linkage(sm._data, method = "ward") # method='single','complete','ward'
+
+#https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+hierarchy.set_link_color_palette(['c', 'm', 'y', 'g','b','r','k'])
+
+dendrogram(Z,
+           truncate_mode="lastp",
+           p=40,
+           orientation ="top" ,
+           leaf_rotation=45.,
+           leaf_font_size=10.,
+           show_contracted=True,
+           show_leaf_counts=True)
 
 
 
