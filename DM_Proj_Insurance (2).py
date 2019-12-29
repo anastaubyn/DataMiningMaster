@@ -10,9 +10,9 @@ import plotly.express as px
 # =============================================================================
 
 
-#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
-my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
+#my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
 # Connect to the database
@@ -739,15 +739,22 @@ plt.show()
 # =============================================================================
 # SOM + HIERARCHICAL
 # =============================================================================
+
+# =========================
+# VALUE
+# =========================
+
 from sompy.sompy import SOMFactory
 from sompy.visualization.plot_tools import plot_hex_map
 import logging
 
-X = df_insurance[['Children', 'Education', 'Yearly_Salary']].values
+df_som = df_insurance
 
-names = ['Children', 'Education', 'Yearly_Salary']
+X = df_insurance[['CMV','Effort_Rate','Total_Premiums','Cancelled']].values
+
+names = ['CMV','Effort_Rate','Total_Premiums','Cancelled']
 sm = SOMFactory().build(data = X,
-               mapsize=(10,10),
+               mapsize=(8,8),
                normalization = 'var',
                initialization='random', #'random', 'pca'
                component_names=names,
@@ -758,13 +765,13 @@ sm.train(n_job=4, verbose='info',
          train_rough_len=30,
          train_finetune_len=100)
 
-final_clusters = pd.DataFrame(sm._data, columns = ['Children', 'Education', 'Yearly_Salary'])
+final_clusters = pd.DataFrame(sm._data, columns = ['CMV','Effort_Rate','Total_Premiums','Cancelled'])
 
 my_labels = pd.DataFrame(sm._bmu[0])
     
 final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
 
-final_clusters.columns = ['Children', 'Education', 'Yearly_Salary','Lables']
+final_clusters.columns = ['CMV','Effort_Rate','Total_Premiums','Cancelled','Value']
 
 from sompy.visualization.mapview import View2DPacked
 view2D  = View2DPacked(10,10,"", text_size=7)
@@ -812,10 +819,119 @@ dendrogram(Z,
            show_contracted=True,
            show_leaf_counts=True)
 
+plt.title('Truncated Hierarchical Clustering Dendrogram')
+plt.xlabel('Cluster Size')
+plt.ylabel('Distance')
+#plt.axhline(y=50)
+plt.show()
 
 
+#Scikit
+
+k = 3 # from observing the dendogram
+
+Hclustering = AgglomerativeClustering(n_clusters=k, affinity="euclidean", linkage="ward")
+
+#Replace the test with proper data
+HC = Hclustering.fit(sm._data)
+
+labels = pd.DataFrame(HC.labels_)
+labels.columns =  ['Value']
 
 
+#To get our labels in a column with the cluster
+df_som.reset_index(drop=True, inplace=True) 
+df_som = pd.DataFrame(pd.concat([df_som, labels],axis=1))
+
+a=-410
+b=1310
+
+df_som['Value'].value_counts()
+
+fig, axs = plt.subplots(nrows=3, ncols=5, figsize=(20,11))
+# cluster 0
+axs[0, 0].hist(df_som['CMV'].loc[df_som['Value']==0], color='darkseagreen')
+axs[0, 0].set_title('CMV for Cluster 0')
+plt.sca(axs[0, 0])
+plt.xticks(np.arange(-500, 1000, 250))
+plt.grid(b=None)
+axs[0, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==0], color='cadetblue')
+axs[0, 1].set_title('Effort_Rate for Cluster 0')
+plt.sca(axs[0, 1])
+plt.xticks(np.arange(0, 0.25, 0.05))
+plt.grid(b=None)
+axs[0, 2].hist(df_som['Total_Premiums'].loc[df_som['Value']==0], color='tan')
+axs[0, 2].set_title('Total_Premiums for Cluster 0')
+plt.sca(axs[0, 2])
+plt.xticks(np.arange(500, 1500, 250))
+plt.grid(b=None)
+axs[0, 3].hist(df_som['Cancelled'].loc[df_som['Value']==0], color='tan')
+axs[0, 3].set_title('Cancelled for Cluster 0')
+plt.sca(axs[0, 3])
+plt.xticks(np.arange(0,1,0.25))
+plt.grid(b=None)
+axs[0, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==0], color='tan')
+axs[0, 4].set_title('Claims_Rate for Cluster 0')
+plt.sca(axs[0, 4])
+plt.xticks(np.arange(0, 2, 0.5))
+plt.grid(b=None)
+
+# cluster 1
+axs[1, 0].hist(df_som['CMV'].loc[df_som['Value']==1], color='darkseagreen')
+axs[1, 0].set_title('CMV for Cluster 1')
+plt.sca(axs[1, 0])
+plt.xticks(np.arange(-500, 1000, 250))
+plt.grid(b=None)
+axs[1, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==1], color='cadetblue')
+axs[1, 1].set_title('Effort_Rate for Cluster 1')
+plt.sca(axs[1, 1])
+plt.xticks(np.arange(0, 0.25, 0.05))
+plt.grid(b=None)
+axs[1, 2].hist(df_insurance['Total_Premiums'].loc[df_som['Value']==1], color='tan')
+axs[1, 2].set_title('Total_Premiums for Cluster 1')
+plt.sca(axs[1, 2])
+plt.xticks(np.arange(500, 1500, 250))
+plt.grid(b=None)
+axs[1, 3].hist(df_som['Cancelled'].loc[df_som['Value']==1], color='tan')
+axs[1, 3].set_title('Cancelled for Cluster 1')
+plt.sca(axs[1, 3])
+plt.xticks(np.arange(0, 1, 0.25))
+plt.grid(b=None)
+axs[1, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==1], color='tan')
+axs[1, 4].set_title('Claims_Rate for Cluster 1')
+plt.sca(axs[1, 4])
+plt.xticks(np.arange(0, 2, 0.5))
+plt.grid(b=None)
+
+# cluster 2
+axs[2, 0].hist(df_som['CMV'].loc[df_som['Value']==2], color='darkseagreen')
+axs[2, 0].set_title('CMV for Cluster 2')
+plt.sca(axs[2, 0])
+plt.xticks(np.arange(-500, 1000, 250))
+plt.grid(b=None)
+axs[2, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==2], color='cadetblue')
+axs[2, 1].set_title('Effort_Rate for Cluster 2')
+plt.sca(axs[2, 1])
+plt.xticks(np.arange(0, 0.25, 0.05))
+plt.grid(b=None)
+axs[2, 2].hist(df_insurance['Total_Premiums'].loc[df_som['Value']==2], color='tan')
+axs[2, 2].set_title('Total_Premiums for Cluster 2')
+plt.sca(axs[2, 2])
+plt.xticks(np.arange(500, 1500, 250))
+plt.grid(b=None)
+axs[2, 3].hist(df_som['Cancelled'].loc[df_som['Value']==2], color='tan')
+axs[2, 3].set_title('Cancelled for Cluster 2')
+plt.sca(axs[2, 3])
+plt.xticks(np.arange(0, 1, 0.25))
+plt.grid(b=None)
+axs[2, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==2], color='tan')
+axs[2, 4].set_title('Claims_Rate for Cluster 2')
+plt.sca(axs[2, 4])
+plt.xticks(np.arange(0, 2, 0.5))
+plt.grid(b=None)
+
+
+plt.show()
 
 
 
