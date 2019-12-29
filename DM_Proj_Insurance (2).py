@@ -693,38 +693,62 @@ cur_axes.axes.get_xaxis().set_visible(False)
 cur_axes.axes.get_yaxis().set_visible(False)
 
 
-ax2.set_xticks([])
+#ax2.set_xticks([])
 ax2.set_yticks([])
 ax2.axis('off')
 
 Hclustering = AgglomerativeClustering(n_clusters=3, affinity="euclidean", linkage="ward")
-HC = Hclustering.fit(kproto[['Yearly_Salary','Education','Children']])
+HC = Hclustering.fit(centroids)
+#HC = Hclustering.fit(kproto[['Yearly_Salary','Education','Children']])
 
 labels = pd.DataFrame(HC.labels_)
 labels.columns =  ['Socio-Demo']
 
-df_insurance.reset_index(drop=True, inplace=True)
-df_insurance = pd.concat([df_insurance, labels], axis = 1)
+
+centroids = pd.concat([centroids, labels], axis = 1)
+centroids['Label']=[i for i in range(0,15)]
+
+
+
+j=0
+for i in range(0, len(centroids['Socio-Demo'])):
+    kproto['Label']=kproto['Label'].replace(centroids['Label'][i], centroids['Socio-Demo'][j])
+    j+=1
+
+df_insurance = pd.concat([df_insurance, kproto['Label']], axis=1)
+df_insurance.rename(columns={"Label": "Socio-Demo"}, inplace=True)
 
 del Z, fig, ax2, centroids, cur_axes, Hclustering, labels, kproto
 
 fig, axs = plt.subplots(3, 3, figsize=(15,15))
 axs[0, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==0], color='darkseagreen')
 axs[0, 0].set_title('Salary for First Cluster')
+plt.sca(axs[0, 0])
+plt.xticks(np.arange(5000, 60000, 10000))
 axs[0, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==0], color='cadetblue')
 axs[0, 1].set_title('Education for First Cluster')
+plt.sca(axs[0, 1])
+plt.xticks(np.arange(1, 4, 0.5))
 axs[0, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==0], color='tan')
 axs[0, 2].set_title('Children for First Cluster')
 axs[1, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==1], color='darkseagreen')
 axs[1, 0].set_title('Salary for Second Cluster')
+plt.sca(axs[1,0])
+plt.xticks(np.arange(5000, 60000, 10000))
 axs[1, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==1], color='cadetblue')
 axs[1, 1].set_title('Education for Second Cluster')
+plt.sca(axs[1, 1])
+plt.xticks(np.arange(1, 4, 0.5))
 axs[1, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==1], color='tan')
 axs[1, 2].set_title('Children for Second Cluster')
 axs[2, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==2], color='darkseagreen')
 axs[2, 0].set_title('Salary for Third Cluster')
+plt.sca(axs[2,0])
+plt.xticks(np.arange(5000, 60000, 10000))
 axs[2, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==2], color='cadetblue')
 axs[2, 1].set_title('Education for Third Cluster')
+plt.sca(axs[2, 1])
+plt.xticks(np.arange(1, 4, 0.5))
 axs[2, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==2], color='tan')
 axs[2, 2].set_title('Children for Third Cluster')
 plt.show()
@@ -734,7 +758,133 @@ plt.show()
 # K-MEANS + HIERARCHICAL
 # =============================================================================
 
+#cmv, Client_Years, Effort_Rate, Total_Premiums - VALUE CLUSTERS
+#NORMALIZE DATA
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+value = df_insurance[['CMV','Client_Years','Effort_Rate','Total_Premiums', 'Cancelled']]
+value_norm = scaler.fit_transform(value)
+value_norm = pd.DataFrame(value_norm, columns = value.columns)
 
+
+#USE K MEANS
+from sklearn.cluster import KMeans
+
+
+kmeans = KMeans(n_clusters=20, random_state=0, n_init = 5, max_iter = 200).fit(value_norm)
+
+clusters = kmeans.cluster_centers_
+
+#save the centroids inverting the normalization
+clusters = pd.DataFrame(scaler.inverse_transform(X = clusters),columns = value.columns)
+
+from sklearn.metrics import silhouette_samples, silhouette_score
+silhouette_avg = silhouette_score(value_norm, kmeans.labels_)
+sample_silhouette_values = silhouette_samples(value_norm, kmeans.labels_)
+
+cluster_labels = pd.DataFrame(kmeans.labels_)
+cluster_labels.columns=['Labels']
+
+value = pd.concat([value, cluster_labels], axis = 1)
+
+del silhouette_avg, sample_silhouette_values, cluster_labels
+
+
+Z = linkage(clusters, method = "ward")
+
+hierarchy.set_link_color_palette(['darkseagreen','cadetblue', 'seagreen', 'mediumseagreen', 'c','mediumturquoise','turquoise'])
+
+fig = plt.figure(figsize=(10, 20))
+ax2 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
+Z = hierarchy.linkage(clusters, method='ward')
+
+dendrogram(Z,
+           truncate_mode="lastp",
+           p=40,
+           orientation ="top" ,
+           leaf_rotation=45.,
+           leaf_font_size=10.,
+           show_contracted=True,
+           show_leaf_counts=True)
+cur_axes = plt.gca()
+cur_axes.axes.get_xaxis().set_visible(False)
+cur_axes.axes.get_yaxis().set_visible(False)
+
+Hclustering = AgglomerativeClustering(n_clusters=3, affinity="euclidean", linkage="ward")
+HC = Hclustering.fit(clusters)
+
+labels = pd.DataFrame(HC.labels_)
+labels.columns =  ['Socio-Demo']
+
+clusters = pd.concat([clusters, labels], axis = 1)
+clusters['Label']=[i for i in range(0,20)]
+
+
+j=0
+for i in range(0, len(clusters['Socio-Demo'])):
+    value['Labels']=value['Labels'].replace(clusters['Label'][i], clusters['Socio-Demo'][j])
+    j+=1
+
+df_insurance = pd.concat([df_insurance, value['Labels']], axis=1)
+df_insurance.rename(columns={"Labels": "Value"}, inplace=True)
+
+
+fig, axs = plt.subplots(3, 5, figsize=(15,15))
+axs[0, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==0], color='darkseagreen')
+axs[0, 0].set_title('CMV for First Cluster')
+plt.sca(axs[0, 0])
+plt.xticks(np.arange(-450, 1250, 200))
+axs[0, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==0], color='cadetblue')
+axs[0, 1].set_title('Client_Years for First Cluster')
+plt.sca(axs[0, 1])
+plt.xticks(np.arange(20, 45, 10))
+axs[0, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==0], color='tan')
+axs[0, 2].set_title('Effort_Rate for First Cluster')
+plt.sca(axs[0, 2])
+plt.xticks(np.arange(0, 0.2, 0.05))
+axs[0, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==0], color='darkseagreen')
+axs[0, 3].set_title('Total_Premiums for First Cluster')
+plt.sca(axs[0, 3])
+plt.xticks(np.arange(500, 1600, 200))
+axs[0, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==0], color='cadetblue')
+axs[0, 4].set_title('Cancelled for First Cluster')
+axs[1, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==1], color='darkseagreen')
+axs[1, 0].set_title('CMV for Second Cluster')
+plt.sca(axs[1, 0])
+plt.xticks(np.arange(-450, 1250, 200))
+axs[1, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==1], color='cadetblue')
+axs[1, 1].set_title('Client_Years for Second Cluster')
+plt.sca(axs[1, 1])
+plt.xticks(np.arange(20, 45, 10))
+axs[1, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==1], color='tan')
+axs[1, 2].set_title('Effort_Rate for Second Cluster')
+plt.sca(axs[1, 2])
+plt.xticks(np.arange(0, 0.2, 0.05))
+axs[1, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==1], color='darkseagreen')
+axs[1, 3].set_title('Total_Premiums for Second Cluster')
+plt.sca(axs[1, 3])
+plt.xticks(np.arange(500, 1600, 200))
+axs[1, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==1], color='cadetblue')
+axs[1, 4].set_title('Cancelled for Second Cluster')
+axs[2, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==2], color='darkseagreen')
+axs[2, 0].set_title('CMV for Third Cluster')
+plt.sca(axs[2, 0])
+plt.xticks(np.arange(-450, 1250, 200))
+axs[2, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==2], color='cadetblue')
+axs[2, 1].set_title('Client_Years for Third Cluster')
+plt.sca(axs[2, 1])
+plt.xticks(np.arange(20, 45, 10))
+axs[2, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==2], color='tan')
+axs[2, 2].set_title('Effort_Rate for Third Cluster')
+plt.sca(axs[2, 2])
+plt.xticks(np.arange(0, 0.2, 0.05))
+axs[2, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==2], color='darkseagreen')
+axs[2, 3].set_title('Total_Premiums for Third Cluster')
+plt.sca(axs[2, 3])
+plt.xticks(np.arange(500, 1600, 200))
+axs[2, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==2], color='cadetblue')
+axs[2, 4].set_title('Cancelled for Third Cluster')
+plt.show()
 
 # =============================================================================
 # SOM + HIERARCHICAL
