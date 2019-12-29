@@ -646,7 +646,7 @@ ax11.legend(loc='upper right', title='Children')
 ## =============================================================================
 
 # =============================================================================
-# K - PROTOTYPES + HIERARCHICAL
+# K - PROTOTYPES + HIERARCHICAL 
 # =============================================================================
 
 #pip install kmodes
@@ -721,36 +721,43 @@ df_insurance.rename(columns={"Label": "Socio-Demo"}, inplace=True)
 del Z, fig, ax2, centroids, cur_axes, Hclustering, labels, kproto
 
 fig, axs = plt.subplots(3, 3, figsize=(15,15))
-axs[0, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==0], color='darkseagreen')
-axs[0, 0].set_title('Salary for First Cluster')
-plt.sca(axs[0, 0])
-plt.xticks(np.arange(5000, 60000, 10000))
-axs[0, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==0], color='cadetblue')
-axs[0, 1].set_title('Education for First Cluster')
+
+# cluster 0
+axs[0, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==0], color='darkseagreen', range=[5000, 60000])
+axs[0, 0].set_title('Salary for Cluster 0')
+axs[0, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==0], color='cadetblue', range=[1,4])
+axs[0, 1].set_title('Education for Cluster 0')
 plt.sca(axs[0, 1])
-plt.xticks(np.arange(1, 4, 0.5))
+plt.xticks([1, 2, 3, 4])
 axs[0, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==0], color='tan')
-axs[0, 2].set_title('Children for First Cluster')
-axs[1, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==1], color='darkseagreen')
-axs[1, 0].set_title('Salary for Second Cluster')
-plt.sca(axs[1,0])
-plt.xticks(np.arange(5000, 60000, 10000))
-axs[1, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==1], color='cadetblue')
-axs[1, 1].set_title('Education for Second Cluster')
+axs[0, 2].set_title('Children for Cluster 0')
+plt.sca(axs[0, 2])
+plt.xticks([0, 1])
+
+# cluster 1
+axs[1, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==1], color='darkseagreen', range=[5000, 60000])
+axs[1, 0].set_title('Salary for Cluster 1')
+axs[1, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==1], color='cadetblue', range=[1,4])
+axs[1, 1].set_title('Education for Cluster 1')
 plt.sca(axs[1, 1])
-plt.xticks(np.arange(1, 4, 0.5))
-axs[1, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==1], color='tan')
+plt.xticks([1, 2, 3, 4])
+axs[1, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==1], color='tan', range=[0,1])
 axs[1, 2].set_title('Children for Second Cluster')
-axs[2, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==2], color='darkseagreen')
+plt.sca(axs[1, 2])
+plt.xticks([0, 1])
+
+# cluster 2
+axs[2, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==2], color='darkseagreen', range=[5000, 60000])
 axs[2, 0].set_title('Salary for Third Cluster')
-plt.sca(axs[2,0])
-plt.xticks(np.arange(5000, 60000, 10000))
-axs[2, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==2], color='cadetblue')
+axs[2, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==2], color='cadetblue', range=[1,4])
 axs[2, 1].set_title('Education for Third Cluster')
 plt.sca(axs[2, 1])
-plt.xticks(np.arange(1, 4, 0.5))
+plt.xticks([1, 2, 3, 4])
 axs[2, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==2], color='tan')
 axs[2, 2].set_title('Children for Third Cluster')
+plt.sca(axs[2, 2])
+plt.xticks([0, 1])
+
 plt.show()
 
 
@@ -758,7 +765,7 @@ plt.show()
 # K-MEANS + HIERARCHICAL
 # =============================================================================
 
-#cmv, Client_Years, Effort_Rate, Total_Premiums - VALUE CLUSTERS
+# CMV, Client_Years, Effort_Rate, Total_Premiums - VALUE CLUSTERS
 #NORMALIZE DATA
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
@@ -830,60 +837,49 @@ df_insurance.rename(columns={"Labels": "Value"}, inplace=True)
 
 
 fig, axs = plt.subplots(3, 5, figsize=(15,15))
-axs[0, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==0], color='darkseagreen')
+
+# cluster 0
+axs[0, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==0], color='darkseagreen', range=[-450,1250])
 axs[0, 0].set_title('CMV for First Cluster')
-plt.sca(axs[0, 0])
-plt.xticks(np.arange(-450, 1250, 200))
-axs[0, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==0], color='cadetblue')
+axs[0, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==0], color='cadetblue', range=[20,45])
 axs[0, 1].set_title('Client_Years for First Cluster')
-plt.sca(axs[0, 1])
-plt.xticks(np.arange(20, 45, 10))
-axs[0, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==0], color='tan')
+axs[0, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==0], color='tan', range=[0,0.2])
 axs[0, 2].set_title('Effort_Rate for First Cluster')
-plt.sca(axs[0, 2])
-plt.xticks(np.arange(0, 0.2, 0.05))
-axs[0, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==0], color='darkseagreen')
+axs[0, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==0], color='dimgrey', range=[0,0.2])
 axs[0, 3].set_title('Total_Premiums for First Cluster')
-plt.sca(axs[0, 3])
-plt.xticks(np.arange(500, 1600, 200))
-axs[0, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==0], color='cadetblue')
+axs[0, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==0], color='rosybrown', range=[0,1])
 axs[0, 4].set_title('Cancelled for First Cluster')
-axs[1, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==1], color='darkseagreen')
+plt.sca(axs[1, 4])
+plt.xticks([0, 1])
+
+# cluster 1
+axs[1, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==1], color='darkseagreen', range=[-450,1250])
 axs[1, 0].set_title('CMV for Second Cluster')
-plt.sca(axs[1, 0])
-plt.xticks(np.arange(-450, 1250, 200))
-axs[1, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==1], color='cadetblue')
+axs[1, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==1], color='cadetblue', range=[20,45])
 axs[1, 1].set_title('Client_Years for Second Cluster')
-plt.sca(axs[1, 1])
-plt.xticks(np.arange(20, 45, 10))
-axs[1, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==1], color='tan')
+axs[1, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==1], color='tan', range=[0,0.2])
 axs[1, 2].set_title('Effort_Rate for Second Cluster')
-plt.sca(axs[1, 2])
-plt.xticks(np.arange(0, 0.2, 0.05))
-axs[1, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==1], color='darkseagreen')
+axs[1, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==1], color='dimgrey', range=[0,0.2])
 axs[1, 3].set_title('Total_Premiums for Second Cluster')
-plt.sca(axs[1, 3])
-plt.xticks(np.arange(500, 1600, 200))
-axs[1, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==1], color='cadetblue')
+axs[1, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==1], color='rosybrown', range=[0,1])
 axs[1, 4].set_title('Cancelled for Second Cluster')
-axs[2, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==2], color='darkseagreen')
+plt.sca(axs[1, 4])
+plt.xticks([0, 1])
+
+# cluster 2
+axs[2, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==2], color='darkseagreen', range=[-450,1250])
 axs[2, 0].set_title('CMV for Third Cluster')
-plt.sca(axs[2, 0])
-plt.xticks(np.arange(-450, 1250, 200))
-axs[2, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==2], color='cadetblue')
+axs[2, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==2], color='cadetblue', range=[20,45])
 axs[2, 1].set_title('Client_Years for Third Cluster')
-plt.sca(axs[2, 1])
-plt.xticks(np.arange(20, 45, 10))
-axs[2, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==2], color='tan')
+axs[2, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==2], color='tan', range=[0,0.2])
 axs[2, 2].set_title('Effort_Rate for Third Cluster')
-plt.sca(axs[2, 2])
-plt.xticks(np.arange(0, 0.2, 0.05))
-axs[2, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==2], color='darkseagreen')
+axs[2, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==2], color='dimgrey', range=[500,1600])
 axs[2, 3].set_title('Total_Premiums for Third Cluster')
-plt.sca(axs[2, 3])
-plt.xticks(np.arange(500, 1600, 200))
-axs[2, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==2], color='cadetblue')
+axs[2, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==2], color='rosybrown', range=[0,1])
 axs[2, 4].set_title('Cancelled for Third Cluster')
+plt.sca(axs[2, 4])
+plt.xticks([0, 1])
+
 plt.show()
 
 # =============================================================================
@@ -937,6 +933,7 @@ from sompy.visualization.bmuhits import BmuHitsView
 vhts  = BmuHitsView(12,12,"Hits Map",text_size=7)
 vhts.show(sm, anotate=True, onlyzeros=False, labelsize=10, cmap="autumn", logaritmic=False)
 
+del X, names, final_clusters, my_labels
 
 # Apply Hierarchical Clustering in the SOM results
 
@@ -951,14 +948,13 @@ import sklearn
 from sklearn.cluster import AgglomerativeClustering
 
 plt.figure(figsize=(10,5))
-plt.style.use('seaborn-whitegrid')
 
 #Scipy generate dendrograms
 #https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
 Z = linkage(sm._data, method = "ward") # method='single','complete','ward'
 
 #https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.dendrogram.html
-hierarchy.set_link_color_palette(['c', 'm', 'y', 'g','b','r','k'])
+hierarchy.set_link_color_palette(['darkseagreen','cadetblue', 'seagreen', 'mediumseagreen', 'c','mediumturquoise','turquoise'])
 
 dendrogram(Z,
            truncate_mode="lastp",
@@ -972,12 +968,9 @@ dendrogram(Z,
 plt.title('Truncated Hierarchical Clustering Dendrogram')
 plt.xlabel('Cluster Size')
 plt.ylabel('Distance')
-#plt.axhline(y=50)
 plt.show()
 
-
 #Scikit
-
 k = 3 # from observing the dendogram
 
 Hclustering = AgglomerativeClustering(n_clusters=k, affinity="euclidean", linkage="ward")
@@ -985,108 +978,344 @@ Hclustering = AgglomerativeClustering(n_clusters=k, affinity="euclidean", linkag
 #Replace the test with proper data
 HC = Hclustering.fit(sm._data)
 
-labels = pd.DataFrame(HC.labels_)
-labels.columns =  ['Value']
+label_SOM_value = pd.DataFrame(HC.labels_)
+label_SOM_value.columns =  ['Value']
 
 
 #To get our labels in a column with the cluster
 df_som.reset_index(drop=True, inplace=True) 
-df_som = pd.DataFrame(pd.concat([df_som, labels],axis=1))
+df_som = pd.DataFrame(pd.concat([df_som, label_SOM_value],axis=1))
 
-a=-410
-b=1310
+del Z, k
 
-df_som['Value'].value_counts()
 
-fig, axs = plt.subplots(nrows=3, ncols=5, figsize=(20,11))
-# cluster 0
-axs[0, 0].hist(df_som['CMV'].loc[df_som['Value']==0], color='darkseagreen')
-axs[0, 0].set_title('CMV for Cluster 0')
-plt.sca(axs[0, 0])
-plt.xticks(np.arange(-500, 1000, 250))
-plt.grid(b=None)
-axs[0, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==0], color='cadetblue')
-axs[0, 1].set_title('Effort_Rate for Cluster 0')
-plt.sca(axs[0, 1])
-plt.xticks(np.arange(0, 0.25, 0.05))
-plt.grid(b=None)
-axs[0, 2].hist(df_som['Total_Premiums'].loc[df_som['Value']==0], color='tan')
-axs[0, 2].set_title('Total_Premiums for Cluster 0')
-plt.sca(axs[0, 2])
-plt.xticks(np.arange(500, 1500, 250))
-plt.grid(b=None)
-axs[0, 3].hist(df_som['Cancelled'].loc[df_som['Value']==0], color='tan')
-axs[0, 3].set_title('Cancelled for Cluster 0')
-plt.sca(axs[0, 3])
-plt.xticks(np.arange(0,1,0.25))
-plt.grid(b=None)
-axs[0, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==0], color='tan')
-axs[0, 4].set_title('Claims_Rate for Cluster 0')
-plt.sca(axs[0, 4])
-plt.xticks(np.arange(0, 2, 0.5))
-plt.grid(b=None)
+fig, axs = plt.subplots(nrows=3, ncols=5, figsize=(20,13))
 
 # cluster 1
-axs[1, 0].hist(df_som['CMV'].loc[df_som['Value']==1], color='darkseagreen')
-axs[1, 0].set_title('CMV for Cluster 1')
-plt.sca(axs[1, 0])
-plt.xticks(np.arange(-500, 1000, 250))
-plt.grid(b=None)
-axs[1, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==1], color='cadetblue')
-axs[1, 1].set_title('Effort_Rate for Cluster 1')
-plt.sca(axs[1, 1])
-plt.xticks(np.arange(0, 0.25, 0.05))
-plt.grid(b=None)
-axs[1, 2].hist(df_insurance['Total_Premiums'].loc[df_som['Value']==1], color='tan')
-axs[1, 2].set_title('Total_Premiums for Cluster 1')
-plt.sca(axs[1, 2])
-plt.xticks(np.arange(500, 1500, 250))
-plt.grid(b=None)
-axs[1, 3].hist(df_som['Cancelled'].loc[df_som['Value']==1], color='tan')
-axs[1, 3].set_title('Cancelled for Cluster 1')
-plt.sca(axs[1, 3])
-plt.xticks(np.arange(0, 1, 0.25))
-plt.grid(b=None)
-axs[1, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==1], color='tan')
-axs[1, 4].set_title('Claims_Rate for Cluster 1')
-plt.sca(axs[1, 4])
-plt.xticks(np.arange(0, 2, 0.5))
-plt.grid(b=None)
+axs[0, 0].hist(df_som['CMV'].loc[df_som['Value']==0], color='darkseagreen', range=[-500,1000])
+axs[0, 0].set_title('CMV for Cluster 1')
+axs[0, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==0], color='cadetblue', range=[0,0.3])
+axs[0, 1].set_title('Effort_Rate for Cluster 1')
+axs[0, 2].hist(df_som['Total_Premiums'].loc[df_som['Value']==0], color='tan', range=[500,1500])
+axs[0, 2].set_title('Total_Premiums for Cluster 1')
+axs[0, 3].hist(df_som['Cancelled'].loc[df_som['Value']==0], color='dimgrey', range=[0,1])
+axs[0, 3].set_title('Cancelled for Cluster 1')
+plt.sca(axs[0, 3])
+plt.xticks([0, 1])
+axs[0, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==0], color='rosybrown', range=[0,1.5])
+axs[0, 4].set_title('Claims_Rate for Cluster 1')
 
 # cluster 2
-axs[2, 0].hist(df_som['CMV'].loc[df_som['Value']==2], color='darkseagreen')
-axs[2, 0].set_title('CMV for Cluster 2')
-plt.sca(axs[2, 0])
-plt.xticks(np.arange(-500, 1000, 250))
-plt.grid(b=None)
-axs[2, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==2], color='cadetblue')
-axs[2, 1].set_title('Effort_Rate for Cluster 2')
-plt.sca(axs[2, 1])
-plt.xticks(np.arange(0, 0.25, 0.05))
-plt.grid(b=None)
-axs[2, 2].hist(df_insurance['Total_Premiums'].loc[df_som['Value']==2], color='tan')
-axs[2, 2].set_title('Total_Premiums for Cluster 2')
-plt.sca(axs[2, 2])
-plt.xticks(np.arange(500, 1500, 250))
-plt.grid(b=None)
-axs[2, 3].hist(df_som['Cancelled'].loc[df_som['Value']==2], color='tan')
-axs[2, 3].set_title('Cancelled for Cluster 2')
-plt.sca(axs[2, 3])
-plt.xticks(np.arange(0, 1, 0.25))
-plt.grid(b=None)
-axs[2, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==2], color='tan')
-axs[2, 4].set_title('Claims_Rate for Cluster 2')
-plt.sca(axs[2, 4])
-plt.xticks(np.arange(0, 2, 0.5))
-plt.grid(b=None)
+axs[1, 0].hist(df_som['CMV'].loc[df_som['Value']==1], color='darkseagreen', range=[-500,1000])
+axs[1, 0].set_title('CMV for Cluster 2')
+axs[1, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==1], color='cadetblue', range=[0,0.3])
+axs[1, 1].set_title('Effort_Rate for Cluster 2')
+axs[1, 2].hist(df_insurance['Total_Premiums'].loc[df_som['Value']==1], color='tan', range=[500,1500])
+axs[1, 2].set_title('Total_Premiums for Cluster 2')
+axs[1, 3].hist(df_som['Cancelled'].loc[df_som['Value']==1], color='dimgrey', range=[0,1])
+axs[1, 3].set_title('Cancelled for Cluster 2')
+plt.sca(axs[1, 3])
+plt.xticks([0, 1])
+axs[1, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==1], color='rosybrown', range=[0,1.5])
+axs[1, 4].set_title('Claims_Rate for Cluster 2')
 
+# cluster 3
+axs[2, 0].hist(df_som['CMV'].loc[df_som['Value']==2], color='darkseagreen', range=[-500,1000])
+axs[2, 0].set_title('CMV for Cluster 3')
+axs[2, 1].hist(df_som['Effort_Rate'].loc[df_som['Value']==2], color='cadetblue', range=[0,0.3])
+axs[2, 1].set_title('Effort_Rate for Cluster 3')
+axs[2, 2].hist(df_insurance['Total_Premiums'].loc[df_som['Value']==2], color='tan', range=[500,1500])
+axs[2, 2].set_title('Total_Premiums for Cluster 3')
+axs[2, 3].hist(df_som['Cancelled'].loc[df_som['Value']==2], color='dimgrey', range=[0,1])
+axs[2, 3].set_title('Cancelled for Cluster 3')
+plt.sca(axs[2, 3])
+plt.xticks([0, 1])
+axs[2, 4].hist(df_som['Claims_Rate'].loc[df_som['Value']==2], color='rosybrown', range=[0,1.5])
+axs[2, 4].set_title('Claims_Rate for Cluster 3')
 
 plt.show()
 
+df_som['Value'].value_counts() # number of observations per cluster
 
+del axs
 
+# =========================
+# PRODUCT - NON RATIOS - CHOOSEN!
+# =========================
 
+from sompy.sompy import SOMFactory
+from sompy.visualization.plot_tools import plot_hex_map
+import logging
 
+df_som = df_insurance
+
+X = df_insurance[['Household', 'Life', 'Health', 'Work_Compensation']].values
+
+names = ['Household', 'Life', 'Health', 'Work_Compensation']
+sm = SOMFactory().build(data = X,
+               mapsize=(10,10),
+               normalization = 'var',
+               initialization='random', #'random', 'pca'
+               component_names=names,
+               lattice='hexa', #'rect','hexa'
+               training = 'seq') #'seq','batch'
+
+sm.train(n_job=4, verbose='info',
+         train_rough_len=30,
+         train_finetune_len=100)
+
+final_clusters = pd.DataFrame(sm._data, columns = ['Household', 'Life', 'Health', 'Work_Compensation'])
+
+my_labels = pd.DataFrame(sm._bmu[0])
+    
+final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
+
+final_clusters.columns = ['Household', 'Life', 'Health', 'Work_Compensation','Product']
+
+from sompy.visualization.mapview import View2DPacked
+view2D  = View2DPacked(10,10,"", text_size=7)
+view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
+plt.show()
+
+from sompy.visualization.mapview import View2D
+view2D  = View2D(10,10,"", text_size=7)
+view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
+plt.show()
+
+from sompy.visualization.bmuhits import BmuHitsView
+vhts  = BmuHitsView(12,12,"Hits Map",text_size=7)
+vhts.show(sm, anotate=True, onlyzeros=False, labelsize=10, cmap="autumn", logaritmic=False)
+
+del X, names, final_clusters, my_labels
+
+# Apply Hierarchical Clustering in the SOM results
+
+# We need scipy to plot the dendrogram 
+import scipy
+from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.cluster import hierarchy
+from pylab import rcParams
+
+# The final result will use the sklearn
+import sklearn
+from sklearn.cluster import AgglomerativeClustering
+
+plt.figure(figsize=(10,5))
+
+#Scipy generate dendrograms
+#https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+Z = linkage(sm._data, method = "ward") # method='single','complete','ward'
+
+#https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+hierarchy.set_link_color_palette(['darkseagreen','cadetblue', 'seagreen', 'mediumseagreen', 'c','mediumturquoise','turquoise'])
+
+dendrogram(Z,
+           truncate_mode="lastp",
+           p=40,
+           orientation ="top" ,
+           leaf_rotation=45.,
+           leaf_font_size=10.,
+           show_contracted=True,
+           show_leaf_counts=True)
+
+plt.title('Truncated Hierarchical Clustering Dendrogram')
+plt.xlabel('Cluster Size')
+plt.ylabel('Distance')
+plt.show()
+
+#Scikit
+k = 3 # from observing the dendogram
+
+Hclustering = AgglomerativeClustering(n_clusters=k, affinity="euclidean", linkage="ward")
+
+#Replace the test with proper data
+HC = Hclustering.fit(sm._data)
+
+labels_SOM_product = pd.DataFrame(HC.labels_)
+labels_SOM_product.columns = ['Product']
+
+#To get our labels in a column with the cluster
+df_som.reset_index(drop=True, inplace=True) 
+df_som = pd.DataFrame(pd.concat([df_som, labels_SOM_product],axis=1))
+
+del Z, k
+
+fig, axs = plt.subplots(nrows=3, ncols=4, figsize=(15,11))
+
+# cluster 1
+axs[0, 0].hist(df_som['Household'].loc[df_som['Product']==0], color='darkseagreen', range=[0,1250])
+axs[0, 0].set_title('Household for Cluster 1')
+axs[0, 1].hist(df_som['Life'].loc[df_som['Product']==0], color='cadetblue', range=[0,300])
+axs[0, 1].set_title('Life for Cluster 1')
+axs[0, 2].hist(df_som['Health'].loc[df_som['Product']==0], color='tan', range=[0,400])
+axs[0, 2].set_title('Health for Cluster 1')
+axs[0, 3].hist(df_som['Work_Compensation'].loc[df_som['Product']==0], color='dimgrey', range=[0,300])
+axs[0, 3].set_title('Work_Compensation for Cluster 1')
+
+# cluster 2
+axs[1, 0].hist(df_som['Household'].loc[df_som['Product']==1], color='darkseagreen', range=[0,1250])
+axs[1, 0].set_title('Household for Cluster 2')
+axs[1, 1].hist(df_som['Life'].loc[df_som['Product']==1], color='cadetblue', range=[0,300])
+axs[1, 1].set_title('Life for Cluster 2')
+axs[1, 2].hist(df_insurance['Health'].loc[df_som['Product']==1], color='tan', range=[0,400])
+axs[1, 2].set_title('Health for Cluster 2')
+axs[1, 3].hist(df_som['Work_Compensation'].loc[df_som['Product']==1], color='dimgrey', range=[0,300])
+axs[1, 3].set_title('Work_Compensation for Cluster 2')
+
+# cluster 3
+axs[2, 0].hist(df_som['Household'].loc[df_som['Product']==2], color='darkseagreen', range=[0,1250])
+axs[2, 0].set_title('Household for Cluster 3')
+axs[2, 1].hist(df_som['Life'].loc[df_som['Product']==2], color='cadetblue', range=[0,300])
+axs[2, 1].set_title('Life for Cluster 3')
+axs[2, 2].hist(df_insurance['Health'].loc[df_som['Product']==2], color='tan', range=[0,400])
+axs[2, 2].set_title('Health for Cluster 3')
+axs[2, 3].hist(df_som['Work_Compensation'].loc[df_som['Product']==2], color='dimgrey', range=[0,300])
+axs[2, 3].set_title('Work_Compensation for Cluster 3')
+
+plt.show()
+
+df_som['Product'].value_counts() # number of observations per cluster
+
+del axs
+
+# =========================
+# PRODUCT -  RATIOS - NOT CHOSEN
+# =========================
+
+from sompy.sompy import SOMFactory
+from sompy.visualization.plot_tools import plot_hex_map
+import logging
+
+df_som = df_insurance
+
+X = df_insurance[['Household_Ratio', 'Life_Ratio', 'Health_Ratio', 'Work_Ratio']].values
+
+names = ['Household_Ratio', 'Life_Ratio', 'Health_Ratio', 'Work_Ratio']
+sm = SOMFactory().build(data = X,
+               mapsize=(10,10),
+               normalization = 'var',
+               initialization='random', #'random', 'pca'
+               component_names=names,
+               lattice='hexa', #'rect','hexa'
+               training = 'seq') #'seq','batch'
+
+sm.train(n_job=4, verbose='info',
+         train_rough_len=30,
+         train_finetune_len=100)
+
+final_clusters = pd.DataFrame(sm._data, columns = ['Household_Ratio', 'Life_Ratio', 'Health_Ratio', 'Work_Ratio'])
+
+my_labels = pd.DataFrame(sm._bmu[0])
+    
+final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
+
+final_clusters.columns = ['Household_Ratio', 'Life_Ratio', 'Health_Ratio', 'Work_Ratio','Product']
+
+from sompy.visualization.mapview import View2DPacked
+view2D  = View2DPacked(10,10,"", text_size=7)
+view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
+plt.show()
+
+from sompy.visualization.mapview import View2D
+view2D  = View2D(10,10,"", text_size=7)
+view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
+plt.show()
+
+from sompy.visualization.bmuhits import BmuHitsView
+vhts  = BmuHitsView(12,12,"Hits Map",text_size=7)
+vhts.show(sm, anotate=True, onlyzeros=False, labelsize=10, cmap="autumn", logaritmic=False)
+
+del X, names, final_clusters, my_labels
+
+# Apply Hierarchical Clustering in the SOM results
+
+# We need scipy to plot the dendrogram 
+import scipy
+from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.cluster import hierarchy
+from pylab import rcParams
+
+# The final result will use the sklearn
+import sklearn
+from sklearn.cluster import AgglomerativeClustering
+
+plt.figure(figsize=(10,5))
+
+#Scipy generate dendrograms
+#https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+Z = linkage(sm._data, method = "ward") # method='single','complete','ward'
+
+#https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+hierarchy.set_link_color_palette(['darkseagreen','cadetblue', 'seagreen', 'mediumseagreen', 'c','mediumturquoise','turquoise'])
+
+dendrogram(Z,
+           truncate_mode="lastp",
+           p=40,
+           orientation ="top" ,
+           leaf_rotation=45.,
+           leaf_font_size=10.,
+           show_contracted=True,
+           show_leaf_counts=True)
+
+plt.title('Truncated Hierarchical Clustering Dendrogram')
+plt.xlabel('Cluster Size')
+plt.ylabel('Distance')
+plt.show()
+
+#Scikit
+k = 3 # from observing the dendogram
+
+Hclustering = AgglomerativeClustering(n_clusters=k, affinity="euclidean", linkage="ward")
+
+#Replace the test with proper data
+HC = Hclustering.fit(sm._data)
+
+labels_SOM_product = pd.DataFrame(HC.labels_)
+labels_SOM_product.columns = ['Product']
+
+#To get our labels in a column with the cluster
+df_som.reset_index(drop=True, inplace=True) 
+df_som = pd.DataFrame(pd.concat([df_som, labels_SOM_product],axis=1))
+
+del Z, k
+
+fig, axs = plt.subplots(nrows=3, ncols=4, figsize=(15,11))
+
+# cluster 1
+axs[0, 0].hist(df_som['Household_Ratio'].loc[df_som['Product']==0], color='darkseagreen', range=[0,0.7])
+axs[0, 0].set_title('Household_Ratio for Cluster 1')
+axs[0, 1].hist(df_som['Life_Ratio'].loc[df_som['Product']==0], color='cadetblue', range=[0,0.4])
+axs[0, 1].set_title('Life_Ratio for Cluster 1')
+axs[0, 2].hist(df_som['Health_Ratio'].loc[df_som['Product']==0], color='tan', range=[0,0.6])
+axs[0, 2].set_title('Health_Ratio for Cluster 1')
+axs[0, 3].hist(df_som['Work_Ratio'].loc[df_som['Product']==0], color='dimgrey', range=[0,0.4])
+axs[0, 3].set_title('Work_Ratio for Cluster 1')
+
+# cluster 2
+axs[1, 0].hist(df_som['Household_Ratio'].loc[df_som['Product']==1], color='darkseagreen', range=[0,0.7])
+axs[1, 0].set_title('Household_Ratio for Cluster 2')
+axs[1, 1].hist(df_som['Life_Ratio'].loc[df_som['Product']==1], color='cadetblue', range=[0,0.4])
+axs[1, 1].set_title('Life_Ratio for Cluster 2')
+axs[1, 2].hist(df_insurance['Health_Ratio'].loc[df_som['Product']==1], color='tan', range=[0,0.6])
+axs[1, 2].set_title('Health_Ratio for Cluster 2')
+axs[1, 3].hist(df_som['Work_Ratio'].loc[df_som['Product']==1], color='dimgrey', range=[0,0.4])
+axs[1, 3].set_title('Work_Ratio for Cluster 2')
+
+# cluster 3
+axs[2, 0].hist(df_som['Household_Ratio'].loc[df_som['Product']==2], color='darkseagreen', range=[0,0.7])
+axs[2, 0].set_title('Household_Ratio for Cluster 3')
+axs[2, 1].hist(df_som['Life_Ratio'].loc[df_som['Product']==2], color='cadetblue', range=[0,0.4])
+axs[2, 1].set_title('Life_Ratio for Cluster 3')
+axs[2, 2].hist(df_insurance['Health_Ratio'].loc[df_som['Product']==2], color='tan', range=[0,0.6])
+axs[2, 2].set_title('Health_Ratio for Cluster 3')
+axs[2, 3].hist(df_som['Work_Ratio'].loc[df_som['Product']==2], color='dimgrey', range=[0,0.4])
+axs[2, 3].set_title('Work_Ratio for Cluster 3')
+
+plt.show()
+
+df_som['Product'].value_counts() # number of observations per cluster
+
+del axs
 
 
 
