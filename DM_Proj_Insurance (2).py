@@ -10,9 +10,9 @@ import plotly.express as px
 # =============================================================================
 
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
-#my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
+my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
 # Connect to the database
@@ -646,7 +646,7 @@ ax11.legend(loc='upper right', title='Children')
 ## =============================================================================
 
 # =============================================================================
-# K - PROTOTYPES
+# K - PROTOTYPES + HIERARCHICAL
 # =============================================================================
 
 #pip install kmodes
@@ -659,7 +659,7 @@ kproto = df_insurance[['Cust_ID','Yearly_Salary', 'Education', 'Children']]
 kproto.reset_index(drop=True, inplace=True)
 
 kp = KP(n_clusters=15, init='Huang', verbose=2)
-clusters = kp.fit_predict(VE_Cat[['Yearly_Salary','Education','Children']], categorical=[1,2])
+clusters = kp.fit_predict(kproto[['Yearly_Salary','Education','Children']], categorical=[1,2])
 
 centro=kp.cluster_centroids_
 kproto['Label']=kp.labels_
@@ -670,7 +670,7 @@ centroids['Yearly_Salary']=pd.DataFrame(centro[0]).loc[:,0]
 centroids['Education']=pd.DataFrame(centro[1]).loc[:,0]
 centroids['Children']=pd.DataFrame(centro[1]).loc[:,1]
 
-del centro, kp, kproto, clusters
+del centro, kp, clusters
 
 Z = linkage(centroids, method = "ward")
 
@@ -698,15 +698,17 @@ ax2.set_yticks([])
 ax2.axis('off')
 
 Hclustering = AgglomerativeClustering(n_clusters=3, affinity="euclidean", linkage="ward")
+HC = Hclustering.fit(kproto[['Yearly_Salary','Education','Children']])
+
 labels = pd.DataFrame(HC.labels_)
 labels.columns =  ['Socio-Demo']
 
 df_insurance.reset_index(drop=True, inplace=True)
 df_insurance = pd.concat([df_insurance, labels], axis = 1)
 
-del Z, fig, ax2, centroids, cur_axes, Hclustering, labels
+del Z, fig, ax2, centroids, cur_axes, Hclustering, labels, kproto
 
-fig, axs = plt.subplots(3, 3)
+fig, axs = plt.subplots(3, 3, figsize=(15,15))
 axs[0, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==0], color='darkseagreen')
 axs[0, 0].set_title('Salary for First Cluster')
 axs[0, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==0], color='cadetblue')
@@ -726,6 +728,13 @@ axs[2, 1].set_title('Education for Third Cluster')
 axs[2, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==2], color='tan')
 axs[2, 2].set_title('Children for Third Cluster')
 plt.show()
+
+
+# =============================================================================
+# K-MEANS + HIERARCHICAL
+# =============================================================================
+
+
 
 # =============================================================================
 # SOM + HIERARCHICAL
