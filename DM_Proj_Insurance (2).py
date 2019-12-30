@@ -10,8 +10,8 @@ import plotly.express as px
 # =============================================================================
 
 
-#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
@@ -544,8 +544,9 @@ df_std = pd.DataFrame(df_std, columns = ['Yearly_Salary_std','CMV_std','Claims_R
                                          'Client_Years_std','Effort_Rate_std',
                                          'Effort_Rate_sqrt_std','Total_Premiums_std'])
 
-df_insurance = df_insurance.join(df_std)
-
+df_insurance.reset_index(inplace=True, drop=True)
+    
+df_insurance= pd.concat([df_insurance, df_std], axis=1, sort=False)
 
 # =============================================================================
 # OUTLIERS FOR NEW VARIABLES
@@ -984,7 +985,6 @@ axs[2, 3].hist(df_insurance['Work_Compensation'].loc[df_insurance['Product']==2]
 axs[2, 3].set_title('Work_Compensation for Cluster 3')
 
 plt.show()
-
 
 
 del scaler, product, product_norm, kmeans, clusters, cluster_labels, Z, fig, ax2, cur_axes, Hclustering, HC, labels, i, j
