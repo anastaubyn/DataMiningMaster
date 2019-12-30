@@ -11,8 +11,8 @@ import plotly.express as px
 
 
 #my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
-my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
+my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
 # Connect to the database
@@ -1594,4 +1594,67 @@ del axs
 
 
 
+# =============================================================================
+# DBSCAN
+# =============================================================================
+
+from sklearn.cluster import DBSCAN
+from sklearn import metrics
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+
+###############
+# PRODUCT
+###############
+# Standardize data
+scaler = StandardScaler()
+product = df_insurance[['Health', 'Household', 'Life', 'Work_Compensation']].reindex()
+product_norm = scaler.fit_transform(product)
+product_norm = pd.DataFrame(product_norm, columns = product.columns)
+
+
+db = DBSCAN(eps=0.7, min_samples=15).fit(product_norm)
+labels = db.labels_
+
+# Number of clusters in labels, ignoring noise if present.
+n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+n_noise_ = list(labels).count(-1)
+
+unique_clusters, counts_clusters = np.unique(db.labels_, return_counts = True)
+print(np.asarray((unique_clusters, counts_clusters)))
+
+print('Estimated number of clusters: %d' % n_clusters_)
+print('Estimated number of noise points: %d' % n_noise_)
+print("Silhouette Coefficient: %0.3f"
+      % metrics.silhouette_score(product_norm, labels))
+
+
+
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2).fit(product_norm)
+pca_2d = pca.transform(product_norm)
+for i in range(0, pca_2d.shape[0]):
+    if db.labels_[i] == 0:
+        c1 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='r',marker='+')
+    elif db.labels_[i] == 1:
+        c2 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='g',marker='o')
+    elif db.labels_[i] == 2:
+        c4 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='k',marker='v')
+    elif db.labels_[i] == 3:
+        c5 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='y',marker='s')
+    elif db.labels_[i] == 4:
+        c6 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='m',marker='p')
+    elif db.labels_[i] == 5:
+        c7 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='c',marker='H')
+    elif db.labels_[i] == -1:
+        c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='*')
+
+plt.legend([c1, c2, c3], ['Cluster 1', 'Cluster 2','Noise'])
+plt.title('DBSCAN finds 2 clusters and noise')
+plt.show()
+
+labels=pd.Series(labels)
+labels.count()==df_insurance.loc[:,df_insurance.columns[:-7]].count()
+
+results=pd.concat([df_insurance.loc[:,df_insurance.columns[:-7]],labels],axis=1,sort=False)
 
