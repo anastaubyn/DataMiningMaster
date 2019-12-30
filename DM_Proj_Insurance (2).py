@@ -10,9 +10,9 @@ import plotly.express as px
 # =============================================================================
 
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
-#my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
+my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
 # Connect to the database
@@ -724,37 +724,37 @@ fig, axs = plt.subplots(3, 3, figsize=(15,15))
 
 # cluster 0
 axs[0, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==0], color='darkseagreen', range=[5000, 60000])
-axs[0, 0].set_title('Salary for First Cluster')
+axs[0, 0].set_title('Salary for Cluster 1')
 axs[0, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==0], color='cadetblue', range=[1,4])
-axs[0, 1].set_title('Education for First Cluster')
+axs[0, 1].set_title('Education for Cluster 1')
 plt.sca(axs[0, 1])
 plt.xticks([1, 2, 3, 4])
 axs[0, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==0], color='tan')
-axs[0, 2].set_title('Children for First Cluster')
+axs[0, 2].set_title('Children for Cluster 1')
 plt.sca(axs[0, 2])
 plt.xticks([0, 1])
 
 # cluster 1
 axs[1, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==1], color='darkseagreen', range=[5000, 60000])
-axs[1, 0].set_title('Salary for Second Cluster')
+axs[1, 0].set_title('Salary for Cluster 2')
 axs[1, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==1], color='cadetblue', range=[1,4])
-axs[1, 1].set_title('Education for Second Cluster')
+axs[1, 1].set_title('Education for Cluster 2')
 plt.sca(axs[1, 1])
 plt.xticks([1, 2, 3, 4])
 axs[1, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==1], color='tan', range=[0,1])
-axs[1, 2].set_title('Children for Second Cluster')
+axs[1, 2].set_title('Children for Cluster 2')
 plt.sca(axs[1, 2])
 plt.xticks([0, 1])
 
 # cluster 2
 axs[2, 0].hist(df_insurance['Yearly_Salary'].loc[df_insurance['Socio-Demo']==2], color='darkseagreen', range=[5000, 60000])
-axs[2, 0].set_title('Salary for Third Cluster')
+axs[2, 0].set_title('Salary for Cluster 3')
 axs[2, 1].hist(df_insurance['Education'].loc[df_insurance['Socio-Demo']==2], color='cadetblue', range=[1,4])
-axs[2, 1].set_title('Education for Third Cluster')
+axs[2, 1].set_title('Education for Cluster 3')
 plt.sca(axs[2, 1])
 plt.xticks([1, 2, 3, 4])
 axs[2, 2].hist(df_insurance['Children'].loc[df_insurance['Socio-Demo']==2], color='tan')
-axs[2, 2].set_title('Children for Third Cluster')
+axs[2, 2].set_title('Children for Cluster 3')
 plt.sca(axs[2, 2])
 plt.xticks([0, 1])
 
@@ -762,7 +762,7 @@ plt.show()
 
 
 # =============================================================================
-# K-MEANS + HIERARCHICAL
+# K-MEANS + HIERARCHICAL FOR VALUE
 # =============================================================================
 
 # CMV, Client_Years, Effort_Rate, Total_Premiums - VALUE CLUSTERS
@@ -836,51 +836,158 @@ df_insurance = pd.concat([df_insurance, value['Labels']], axis=1)
 df_insurance.rename(columns={"Labels": "Value"}, inplace=True)
 
 
-fig, axs = plt.subplots(3, 5, figsize=(15,15))
+fig, axs = plt.subplots(3, 5, figsize=(20,15))
 
 # cluster 0
 axs[0, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==0], color='darkseagreen', range=[-450,1250])
-axs[0, 0].set_title('CMV for First Cluster')
+axs[0, 0].set_title('CMV for Cluster 1')
 axs[0, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==0], color='cadetblue', range=[20,45])
-axs[0, 1].set_title('Client_Years for First Cluster')
+axs[0, 1].set_title('Client_Years for Cluster 1')
 axs[0, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==0], color='tan', range=[0,0.2])
-axs[0, 2].set_title('Effort_Rate for First Cluster')
-axs[0, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==0], color='dimgrey', range=[0,0.2])
-axs[0, 3].set_title('Total_Premiums for First Cluster')
+axs[0, 2].set_title('Effort_Rate for Cluster 1')
+axs[0, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==0], color='dimgrey', range=[500,1600])
+axs[0, 3].set_title('Total_Premiums for Cluster 1')
 axs[0, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==0], color='rosybrown', range=[0,1])
-axs[0, 4].set_title('Cancelled for First Cluster')
+axs[0, 4].set_title('Cancelled for Cluster 1')
 plt.sca(axs[1, 4])
 plt.xticks([0, 1])
 
 # cluster 1
 axs[1, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==1], color='darkseagreen', range=[-450,1250])
-axs[1, 0].set_title('CMV for Second Cluster')
+axs[1, 0].set_title('CMV for Cluster 2')
 axs[1, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==1], color='cadetblue', range=[20,45])
-axs[1, 1].set_title('Client_Years for Second Cluster')
+axs[1, 1].set_title('Client_Years for Cluster 2')
 axs[1, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==1], color='tan', range=[0,0.2])
-axs[1, 2].set_title('Effort_Rate for Second Cluster')
-axs[1, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==1], color='dimgrey', range=[0,0.2])
-axs[1, 3].set_title('Total_Premiums for Second Cluster')
+axs[1, 2].set_title('Effort_Rate for Cluster 2')
+axs[1, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==1], color='dimgrey', range=[500,1600])
+axs[1, 3].set_title('Total_Premiums for Cluster 2')
 axs[1, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==1], color='rosybrown', range=[0,1])
-axs[1, 4].set_title('Cancelled for Second Cluster')
+axs[1, 4].set_title('Cancelled for Cluster 2')
 plt.sca(axs[1, 4])
 plt.xticks([0, 1])
 
 # cluster 2
 axs[2, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==2], color='darkseagreen', range=[-450,1250])
-axs[2, 0].set_title('CMV for Third Cluster')
+axs[2, 0].set_title('CMV for Cluster 3')
 axs[2, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==2], color='cadetblue', range=[20,45])
-axs[2, 1].set_title('Client_Years for Third Cluster')
+axs[2, 1].set_title('Client_Years for Cluster 3')
 axs[2, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==2], color='tan', range=[0,0.2])
-axs[2, 2].set_title('Effort_Rate for Third Cluster')
+axs[2, 2].set_title('Effort_Rate for Cluster 3')
 axs[2, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==2], color='dimgrey', range=[500,1600])
-axs[2, 3].set_title('Total_Premiums for Third Cluster')
+axs[2, 3].set_title('Total_Premiums for Cluster 3')
 axs[2, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==2], color='rosybrown', range=[0,1])
-axs[2, 4].set_title('Cancelled for Third Cluster')
+axs[2, 4].set_title('Cancelled for Cluster 3')
 plt.sca(axs[2, 4])
 plt.xticks([0, 1])
 
 plt.show()
+
+# =============================================================================
+# K MEANS + HIERARCHICAL FOR PRODUCT
+# =============================================================================
+#Health, Household, Life, Work_Compensation
+
+
+scaler = StandardScaler()
+product = df_insurance[['Health', 'Household', 'Life', 'Work_Compensation']].reindex()
+product_norm = scaler.fit_transform(product)
+product_norm = pd.DataFrame(product_norm, columns = product.columns)
+
+kmeans = KMeans(n_clusters=20, random_state=0, n_init = 5, max_iter = 200).fit(product_norm)
+clusters = kmeans.cluster_centers_
+
+#save the centroids inverting the normalization
+clusters = pd.DataFrame(scaler.inverse_transform(X = clusters),columns = product.columns)
+
+cluster_labels = pd.DataFrame(kmeans.labels_)
+cluster_labels.columns=['Labels']
+
+product.reset_index(drop=True, inplace=True)
+product = pd.concat([product, cluster_labels], axis = 1)
+
+
+#HIERARCHICAL
+
+Z = linkage(clusters, method = "ward")
+
+hierarchy.set_link_color_palette(['darkseagreen','cadetblue', 'seagreen', 'mediumseagreen', 'c','mediumturquoise','turquoise'])
+
+fig = plt.figure(figsize=(10, 20))
+ax2 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
+Z = hierarchy.linkage(clusters, method='ward')
+
+dendrogram(Z,
+           truncate_mode="lastp",
+           p=40,
+           orientation ="top" ,
+           leaf_rotation=45.,
+           leaf_font_size=10.,
+           show_contracted=True,
+           show_leaf_counts=True)
+cur_axes = plt.gca()
+cur_axes.axes.get_xaxis().set_visible(False)
+cur_axes.axes.get_yaxis().set_visible(False)
+
+Hclustering = AgglomerativeClustering(n_clusters=3, affinity="euclidean", linkage="ward")
+HC = Hclustering.fit(clusters)
+
+labels = pd.DataFrame(HC.labels_)
+labels.columns =  ['Socio-Demo']
+
+clusters = pd.concat([clusters, labels], axis = 1)
+clusters['Label']=[i for i in range(0,20)]
+
+j=0
+for i in range(0, len(clusters['Socio-Demo'])):
+    product['Labels']=product['Labels'].replace(clusters['Label'][i], clusters['Socio-Demo'][j])
+    j+=1
+
+df_insurance.reset_index(drop=True, inplace=True)
+df_insurance = pd.concat([df_insurance, product['Labels']], axis=1)
+df_insurance.rename(columns={"Labels": "Product"}, inplace=True)
+
+
+
+
+#plot for profilling
+
+fig, axs = plt.subplots(3, 4, figsize=(15,15))
+
+# cluster 0
+axs[0, 0].hist(df_insurance['Health'].loc[df_insurance['Product']==0], color='darkseagreen', range=[0,400])
+axs[0, 0].set_title('Health for Cluster 1')
+axs[0, 1].hist(df_insurance['Household'].loc[df_insurance['Product']==0], color='cadetblue', range=[-100,1200])
+axs[0, 1].set_title('Household for Cluster 1')
+axs[0, 2].hist(df_insurance['Life'].loc[df_insurance['Product']==0], color='tan', range=[0,300])
+axs[0, 2].set_title('Life for Cluster 1')
+axs[0, 3].hist(df_insurance['Work_Compensation'].loc[df_insurance['Product']==0], color='dimgrey', range=[0,300])
+axs[0, 3].set_title('Work_Compensation for Cluster 1')
+
+# cluster 1
+axs[1, 0].hist(df_insurance['Health'].loc[df_insurance['Product']==1], color='darkseagreen', range=[0,400])
+axs[1, 0].set_title('Health for Cluster 2')
+axs[1, 1].hist(df_insurance['Household'].loc[df_insurance['Product']==1], color='cadetblue', range=[-100,1200])
+axs[1, 1].set_title('Household for Cluster 2')
+axs[1, 2].hist(df_insurance['Life'].loc[df_insurance['Product']==1], color='tan', range=[0,300]) 
+axs[1, 2].set_title('Life for Cluster 2')
+axs[1, 3].hist(df_insurance['Work_Compensation'].loc[df_insurance['Product']==1], color='dimgrey', range=[0,300])
+axs[1, 3].set_title('Work_Compensation for Cluster 2')
+
+# cluster 2
+axs[2, 0].hist(df_insurance['Health'].loc[df_insurance['Product']==2], color='darkseagreen', range=[0,400])
+axs[2, 0].set_title('Health for Cluster 3')
+axs[2, 1].hist(df_insurance['Household'].loc[df_insurance['Product']==2], color='cadetblue', range=[-100,1200])
+axs[2, 1].set_title('Household for Cluster 3')
+axs[2, 2].hist(df_insurance['Life'].loc[df_insurance['Product']==2], color='tan', range=[0,300])
+axs[2, 2].set_title('Life for Cluster 3')
+axs[2, 3].hist(df_insurance['Work_Compensation'].loc[df_insurance['Product']==2], color='dimgrey', range=[0,300])
+axs[2, 3].set_title('Work_Compensation for Cluster 3')
+
+plt.show()
+
+
+
+del scaler, product, product_norm, kmeans, clusters, cluster_labels, Z, fig, ax2, cur_axes, Hclustering, HC, labels, i, j
 
 # =============================================================================
 # SOM + HIERARCHICAL
