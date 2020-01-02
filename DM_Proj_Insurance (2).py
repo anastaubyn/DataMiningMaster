@@ -1667,7 +1667,7 @@ for i in range(0, pca_2d.shape[0]):
     elif db.labels_[i] == -1:
         c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='o')
 
-plt.legend([c1, c2, c3, c4], ['Cluster 1', 'Noise'])
+plt.legend([c1, c3], ['Cluster 1', 'Noise'])
 plt.title('DBSCAN found 1 cluster and noise')
 plt.show()
 
@@ -1776,7 +1776,7 @@ for i in range(0, pca_2d.shape[0]):
     elif db.labels_[i] == -1:
         c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='*')
 
-plt.legend([c1, c2, c3, c4], ['Cluster 1', 'Cluster 2', 'Noise'])
+plt.legend([c1, c2, c3], ['Cluster 1', 'Cluster 2', 'Noise'])
 plt.title('DBSCAN found 2 clusters and noise')
 plt.show()
 
@@ -1876,7 +1876,7 @@ labels = pd.DataFrame(labels)
 labels.columns =  ['Value']
 results_socio=pd.concat([labels,df_dbscan],axis=1)
 
-fig, axs = plt.subplots(nrows=8, ncols=3, figsize=(25,30))
+fig, axs = plt.subplots(nrows=8, ncols=3, figsize=(25,35))
 
 # cluster 1
 axs[0, 0].hist(results_socio['Education'].loc[results_socio['Value']==0], color='darkseagreen',range=[0,4])
@@ -1941,5 +1941,83 @@ axs[7, 1].hist(results_socio['Children'].loc[results_socio['Value']==7], color='
 axs[7, 1].set_title('Children for Cluster 8')
 axs[7, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==7], color='tan', range=[1000,60000])
 axs[7, 2].set_title('Yearly_Salary for Cluster 8')
+
+plt.show()
+
+df_dbscan.reset_index(drop=True, inplace=True) 
+labels.replace(7,1,inplace=True)
+labels.replace(6,5,inplace=True)
+
+pca = PCA(n_components=2).fit(socio_view)
+pca_2d = pca.transform(socio_view)
+for i in range(0, pca_2d.shape[0]):
+    if db.labels_[i] == 0:
+        c1 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='r',marker='+')
+    elif db.labels_[i] == 1:
+        c2 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='g',marker='o')
+    elif db.labels_[i] == 2:
+        c4 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='k',marker='v')
+    elif db.labels_[i] == 3:
+        c5 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='y',marker='s')
+    elif db.labels_[i] == 4:
+        c6 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='m',marker='p')
+    elif db.labels_[i] == 5:
+        c7 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='c',marker='H')
+
+plt.legend([c1, c2, c4,c5,c6,c7], ['Cluster 1', 'Cluster 2','Cluster 3','Cluster 4','Cluster 5','Cluster 6'],loc='upper center', bbox_to_anchor=(1.2, 0.8), shadow=True, ncol=1)
+plt.title('We found 6 clusters and no noise')
+plt.show()
+
+results_socio=pd.concat([labels,df_dbscan],axis=1)
+
+fig, axs = plt.subplots(nrows=6, ncols=3, figsize=(25,30))
+
+# cluster 1
+axs[0, 0].hist(results_socio['Education'].loc[results_socio['Value']==0], color='darkseagreen',range=[0,4])
+axs[0, 0].set_title('Education for Cluster 1')
+axs[0, 1].hist(results_socio['Children'].loc[results_socio['Value']==0], color='cadetblue',range=[0,1])
+axs[0, 1].set_title('Children for Cluster 1')
+axs[0, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==0], color='tan', range=[1000,60000])
+axs[0, 2].set_title('Yearly_Salary for Cluster 1')
+
+# cluster 2
+axs[1, 0].hist(results_socio['Education'].loc[results_socio['Value']==1], color='darkseagreen',range=[0,4])
+axs[1, 0].set_title('Education for Cluster 2')
+axs[1, 1].hist(results_socio['Children'].loc[results_socio['Value']==1], color='cadetblue',range=[0,1])
+axs[1, 1].set_title('Children for Cluster 2')
+axs[1, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==1], color='tan', range=[1000,60000])
+axs[1, 2].set_title('Yearly_Salary for Cluster 2')
+
+# cluster 3
+axs[2, 0].hist(results_socio['Education'].loc[results_socio['Value']==2], color='darkseagreen',range=[0,4])
+axs[2, 0].set_title('Education for Cluster 3')
+axs[2, 1].hist(results_socio['Children'].loc[results_socio['Value']==2], color='cadetblue',range=[0,1])
+axs[2, 1].set_title('Children for Cluster 3')
+axs[2, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==2], color='tan', range=[1000,60000])
+axs[2, 2].set_title('Yearly_Salary for Cluster 3')
+
+# cluster 4
+axs[3, 0].hist(results_socio['Education'].loc[results_socio['Value']==3], color='darkseagreen',range=[0,4])
+axs[3, 0].set_title('Education for Cluster 4')
+axs[3, 1].hist(results_socio['Children'].loc[results_socio['Value']==3], color='cadetblue',range=[0,1])
+axs[3, 1].set_title('Children for Cluster 4')
+axs[3, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==3], color='tan', range=[1000,60000])
+axs[3, 2].set_title('Yearly_Salary for Cluster 4')
+
+# cluster 5
+axs[4, 0].hist(results_socio['Education'].loc[results_socio['Value']==4], color='darkseagreen',range=[0,4])
+axs[4, 0].set_title('Education for Cluster 5')
+axs[4, 1].hist(results_socio['Children'].loc[results_socio['Value']==4], color='cadetblue',range=[0,1])
+axs[4, 1].set_title('Children for Cluster 5')
+axs[4, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==4], color='tan', range=[1000,60000])
+axs[4, 2].set_title('Yearly_Salary for Cluster 5')
+
+# cluster 6
+axs[5, 0].hist(results_socio['Education'].loc[results_socio['Value']==5], color='darkseagreen',range=[0,4])
+axs[5, 0].set_title('Education for Cluster 6')
+axs[5, 1].hist(results_socio['Children'].loc[results_socio['Value']==5], color='cadetblue',range=[0,1])
+axs[5, 1].set_title('Children for Cluster 6')
+axs[5, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==5], color='tan', range=[1000,60000])
+axs[5, 2].set_title('Yearly_Salary for Cluster 6')
 
 plt.show()
