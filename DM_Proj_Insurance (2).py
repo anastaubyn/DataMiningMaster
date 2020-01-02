@@ -10,8 +10,8 @@ import plotly.express as px
 # =============================================================================
 
 
-my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
-#my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
+#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
@@ -987,7 +987,7 @@ axs[2, 3].set_title('Work_Compensation for Cluster 3')
 plt.show()
 
 
-del scaler, product, product_norm, kmeans, clusters, cluster_labels, Z, fig, ax2, cur_axes, Hclustering, HC, labels, i, j
+del scaler, product, kmeans, clusters, cluster_labels, Z, fig, ax2, cur_axes, Hclustering, HC, labels, i, j
 
 # =============================================================================
 # SOM + HIERARCHICAL
@@ -1600,18 +1600,12 @@ del axs
 
 from sklearn.cluster import DBSCAN
 from sklearn import metrics
-from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
-
+from sklearn.decomposition import PCA
+df_dbscan = df_insurance
 ###############
 # PRODUCT
 ###############
-# Standardize data
-scaler = StandardScaler()
-product = df_insurance[['Health', 'Household', 'Life', 'Work_Compensation']].reindex()
-product_norm = scaler.fit_transform(product)
-product_norm = pd.DataFrame(product_norm, columns = product.columns)
-
 
 db = DBSCAN(eps=0.7, min_samples=15).fit(product_norm)
 labels = db.labels_
@@ -1629,10 +1623,236 @@ print("Silhouette Coefficient: %0.3f"
       % metrics.silhouette_score(product_norm, labels))
 
 
-
-from sklearn.decomposition import PCA
 pca = PCA(n_components=2).fit(product_norm)
 pca_2d = pca.transform(product_norm)
+for i in range(0, pca_2d.shape[0]):
+    if db.labels_[i] == 0:
+        c1 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='r',marker='+')
+    elif db.labels_[i] == 1:
+        c2 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='g',marker='o')
+    elif db.labels_[i] == -1:
+        c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='*')
+
+plt.legend([c1, c2, c3], ['Cluster 1', 'Cluster 2','Noise'])
+plt.title('DBSCAN finds 2 clusters and noise')
+plt.show()
+
+###############
+# PRODUCT RATIOS
+###############
+
+product_ratios = df_insurance[['Health_Ratio', 'Life_Ratio', 'Work_Ratio']].reindex()
+
+db = DBSCAN(eps=0.1, min_samples=16).fit(product_ratios)
+labels = db.labels_
+
+# Number of clusters in labels, ignoring noise if present.
+n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+n_noise_ = list(labels).count(-1)
+
+unique_clusters, counts_clusters = np.unique(db.labels_, return_counts = True)
+print(np.asarray((unique_clusters, counts_clusters)))
+
+print('Estimated number of clusters: %d' % n_clusters_)
+print('Estimated number of noise points: %d' % n_noise_)
+print("Silhouette Coefficient: %0.3f"
+      % metrics.silhouette_score(product_ratios, labels))
+
+
+pca = PCA(n_components=2).fit(product_ratios)
+pca_2d = pca.transform(product_ratios)
+for i in range(0, pca_2d.shape[0]):
+    if db.labels_[i] == 0:
+        c1 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='r',marker='+')
+    elif db.labels_[i] == -1:
+        c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='o')
+
+plt.legend([c1, c2, c3, c4], ['Cluster 1', 'Noise'])
+plt.title('DBSCAN found 1 cluster and noise')
+plt.show()
+
+
+#################
+# VALUE WITH CMV
+#################
+db = DBSCAN(eps=0.7, min_samples=10).fit(value_norm)
+labels = db.labels_
+
+# Number of clusters in labels, ignoring noise if present.
+n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+n_noise_ = list(labels).count(-1)
+
+unique_clusters, counts_clusters = np.unique(db.labels_, return_counts = True)
+print(np.asarray((unique_clusters, counts_clusters)))
+
+print('Estimated number of clusters: %d' % n_clusters_)
+print('Estimated number of noise points: %d' % n_noise_)
+print("Silhouette Coefficient: %0.3f"
+      % metrics.silhouette_score(value_norm, labels))
+
+
+pca = PCA(n_components=2).fit(value_norm)
+pca_2d = pca.transform(value_norm)
+for i in range(0, pca_2d.shape[0]):
+    if db.labels_[i] == 0:
+        c1 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='r',marker='+')
+    elif db.labels_[i] == 1:
+        c2 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='g',marker='o')
+    elif db.labels_[i] == 2:
+        c4 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='k',marker='v')
+    elif db.labels_[i] == -1:
+        c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='*')
+
+plt.legend([c1, c2, c3, c4], ['Cluster 1', 'Cluster 2', 'Noise'])
+plt.title('DBSCAN found 2 clusters and noise')
+plt.show()
+
+df_dbscan.reset_index(drop=True, inplace=True) 
+labels = pd.DataFrame(labels)
+labels.columns =  ['Value']
+
+results_value=pd.concat([labels,df_dbscan],axis=1).reindex()
+
+fig, axs = plt.subplots(nrows=2, ncols=5, figsize=(20,11))
+
+# cluster 1
+axs[0, 0].hist(results_value['CMV'].loc[results_value['Value']==0], color='darkseagreen', range=[-500,1000])
+axs[0, 0].set_title('CMV for Cluster 1')
+axs[0, 1].hist(results_value['Effort_Rate'].loc[results_value['Value']==0], color='cadetblue', range=[0,0.3])
+axs[0, 1].set_title('Effort_Rate for Cluster 1')
+axs[0, 2].hist(results_value['Total_Premiums'].loc[results_value['Value']==0], color='tan', range=[500,1500])
+axs[0, 2].set_title('Total_Premiums for Cluster 1')
+axs[0, 3].hist(results_value['Cancelled'].loc[results_value['Value']==0], color='dimgrey', range=[0,1])
+axs[0, 3].set_title('Cancelled for Cluster 1')
+plt.sca(axs[0, 3])
+plt.xticks([0, 1])
+axs[0, 4].hist(results_value['Claims_Rate'].loc[results_value['Value']==0], color='rosybrown', range=[0,1.5])
+axs[0, 4].set_title('Claims_Rate for Cluster 1')
+
+# cluster 2
+axs[1, 0].hist(results_value['CMV'].loc[results_value['Value']==1], color='darkseagreen', range=[-500,1000])
+axs[1, 0].set_title('CMV for Cluster 2')
+axs[1, 1].hist(results_value['Effort_Rate'].loc[results_value['Value']==1], color='cadetblue', range=[0,0.3])
+axs[1, 1].set_title('Effort_Rate for Cluster 2')
+axs[1, 2].hist(results_value['Total_Premiums'].loc[results_value['Value']==1], color='tan', range=[500,1500])
+axs[1, 2].set_title('Total_Premiums for Cluster 2')
+axs[1, 3].hist(results_value['Cancelled'].loc[results_value['Value']==1], color='dimgrey', range=[0,1])
+axs[1, 3].set_title('Cancelled for Cluster 2')
+plt.sca(axs[1, 3])
+plt.xticks([0, 1])
+axs[1, 4].hist(results_value['Claims_Rate'].loc[results_value['Value']==1], color='rosybrown', range=[0,1.5])
+axs[1, 4].set_title('Claims_Rate for Cluster 2')
+
+plt.show()
+
+########################
+# VALUE WITH CLAIMS_RATE
+########################
+scaler = StandardScaler()
+value2 = df_insurance[['Claims_Rate','Client_Years','Effort_Rate','Total_Premiums', 'Cancelled']]
+value_norm2 = scaler.fit_transform(value)
+value_norm2 = pd.DataFrame(value_norm, columns = value.columns)
+
+db = DBSCAN(eps=0.7, min_samples=12).fit(value_norm2)
+labels = db.labels_
+
+# Number of clusters in labels, ignoring noise if present.
+n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+n_noise_ = list(labels).count(-1)
+
+unique_clusters, counts_clusters = np.unique(db.labels_, return_counts = True)
+print(np.asarray((unique_clusters, counts_clusters)))
+
+print('Estimated number of clusters: %d' % n_clusters_)
+print('Estimated number of noise points: %d' % n_noise_)
+print("Silhouette Coefficient: %0.3f"
+      % metrics.silhouette_score(value_norm2, labels))
+
+
+pca = PCA(n_components=2).fit(value_norm2)
+pca_2d = pca.transform(value_norm2)
+for i in range(0, pca_2d.shape[0]):
+    if db.labels_[i] == 0:
+        c1 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='r',marker='+')
+    elif db.labels_[i] == 1:
+        c2 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='g',marker='o')
+    elif db.labels_[i] == -1:
+        c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='*')
+
+plt.legend([c1, c2, c3, c4], ['Cluster 1', 'Cluster 2', 'Noise'])
+plt.title('DBSCAN found 2 clusters and noise')
+plt.show()
+
+df_dbscan.reset_index(drop=True, inplace=True) 
+labels = pd.DataFrame(labels)
+labels.columns =  ['Value']
+
+results_value2=pd.concat([labels,df_dbscan],axis=1).reindex()
+
+fig, axs = plt.subplots(nrows=2, ncols=5, figsize=(20,11))
+
+# cluster 1
+axs[0, 0].hist(results_value2['CMV'].loc[results_value2['Value']==0], color='darkseagreen', range=[-500,1000])
+axs[0, 0].set_title('CMV for Cluster 1')
+axs[0, 1].hist(results_value2['Effort_Rate'].loc[results_value2['Value']==0], color='cadetblue', range=[0,0.3])
+axs[0, 1].set_title('Effort_Rate for Cluster 1')
+axs[0, 2].hist(results_value2['Total_Premiums'].loc[results_value2['Value']==0], color='tan', range=[500,1500])
+axs[0, 2].set_title('Total_Premiums for Cluster 1')
+axs[0, 3].hist(results_value2['Cancelled'].loc[results_value2['Value']==0], color='dimgrey', range=[0,1])
+axs[0, 3].set_title('Cancelled for Cluster 1')
+plt.sca(axs[0, 3])
+plt.xticks([0, 1])
+axs[0, 4].hist(results_value2['Claims_Rate'].loc[results_value2['Value']==0], color='rosybrown', range=[0,1.5])
+axs[0, 4].set_title('Claims_Rate for Cluster 1')
+
+# cluster 2
+axs[1, 0].hist(results_value2['CMV'].loc[results_value2['Value']==1], color='darkseagreen', range=[-500,1000])
+axs[1, 0].set_title('CMV for Cluster 2')
+axs[1, 1].hist(results_value2['Effort_Rate'].loc[results_value2['Value']==1], color='cadetblue', range=[0,0.3])
+axs[1, 1].set_title('Effort_Rate for Cluster 2')
+axs[1, 2].hist(results_value2['Total_Premiums'].loc[results_value2['Value']==1], color='tan', range=[500,1500])
+axs[1, 2].set_title('Total_Premiums for Cluster 2')
+axs[1, 3].hist(results_value2['Cancelled'].loc[results_value2['Value']==1], color='dimgrey', range=[0,1])
+axs[1, 3].set_title('Cancelled for Cluster 2')
+plt.sca(axs[1, 3])
+plt.xticks([0, 1])
+axs[1, 4].hist(results_value2['Claims_Rate'].loc[results_value2['Value']==1], color='rosybrown', range=[0,1.5])
+axs[1, 4].set_title('Claims_Rate for Cluster 2')
+
+plt.show()
+
+########################
+# SOCIO DEMOGRAPHIC VIEW
+########################
+
+#Create dummy variables for education
+for elem in df_dbscan['Education'].unique():
+    df_dbscan[str(elem)] = df_dbscan['Education'] == elem
+    
+#normalize salary, for it to be in a scale from 0 to 1 like the binary variables
+salary = df_dbscan[['Yearly_Salary']]
+salary = (salary - salary.min()) / (salary.max() - salary.min())
+
+socio_view = pd.concat([df_dbscan[['1.0','2.0','3.0','4.0','Children']],salary],axis=1).reindex()
+
+db = DBSCAN(eps=0.3, min_samples=100).fit(socio_view)
+labels = db.labels_
+
+# Number of clusters in labels, ignoring noise if present.
+n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+n_noise_ = list(labels).count(-1)
+
+unique_clusters, counts_clusters = np.unique(db.labels_, return_counts = True)
+print(np.asarray((unique_clusters, counts_clusters)))
+
+print('Estimated number of clusters: %d' % n_clusters_)
+print('Estimated number of noise points: %d' % n_noise_)
+print("Silhouette Coefficient: %0.3f"
+      % metrics.silhouette_score(socio_view, labels))
+
+
+pca = PCA(n_components=2).fit(socio_view)
+pca_2d = pca.transform(socio_view)
 for i in range(0, pca_2d.shape[0]):
     if db.labels_[i] == 0:
         c1 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='r',marker='+')
@@ -1646,15 +1866,74 @@ for i in range(0, pca_2d.shape[0]):
         c6 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='m',marker='p')
     elif db.labels_[i] == 5:
         c7 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='c',marker='H')
-    elif db.labels_[i] == -1:
+    elif db.labels_[i] == 6:
         c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='*')
-
-plt.legend([c1, c2, c3], ['Cluster 1', 'Cluster 2','Noise'])
-plt.title('DBSCAN finds 2 clusters and noise')
+    elif db.labels_[i] == 7:
+        c8 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='k',marker='3')
+plt.legend([c1, c2, c3, c4,c5,c6,c7,c8], ['Cluster 1', 'Cluster 2','Cluster 3','Cluster 4','Cluster 5','Cluster 6','Cluster 7'])
+plt.title('DBSCAN found 7 clusters and no noise')
 plt.show()
 
-labels=pd.Series(labels)
-labels.count()==df_insurance.loc[:,df_insurance.columns[:-7]].count()
+df_dbscan.reset_index(drop=True, inplace=True) 
+labels = pd.DataFrame(labels)
+labels.columns =  ['Value']
+results_socio=pd.concat([labels,df_dbscan],axis=1)
 
-results=pd.concat([df_insurance.loc[:,df_insurance.columns[:-7]],labels],axis=1,sort=False)
+fig, axs = plt.subplots(nrows=7, ncols=3, figsize=(25,30))
 
+# cluster 1
+axs[0, 0].hist(results_socio['Education'].loc[results_socio['Value']==0], color='darkseagreen',range=[0,4])
+axs[0, 0].set_title('Education for Cluster 1')
+axs[0, 1].hist(results_socio['Children'].loc[results_socio['Value']==0], color='cadetblue',range=[0,1])
+axs[0, 1].set_title('Children for Cluster 1')
+axs[0, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==0], color='tan', range=[1000,60000])
+axs[0, 2].set_title('Yearly_Salary for Cluster 1')
+
+# cluster 2
+axs[1, 0].hist(results_socio['Education'].loc[results_socio['Value']==1], color='darkseagreen',range=[0,4])
+axs[1, 0].set_title('Education for Cluster 2')
+axs[1, 1].hist(results_socio['Children'].loc[results_socio['Value']==1], color='cadetblue',range=[0,1])
+axs[1, 1].set_title('Children for Cluster 2')
+axs[1, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==1], color='tan', range=[1000,60000])
+axs[1, 2].set_title('Yearly_Salary for Cluster 2')
+
+# cluster 3
+axs[2, 0].hist(results_socio['Education'].loc[results_socio['Value']==2], color='darkseagreen',range=[0,4])
+axs[2, 0].set_title('Education for Cluster 3')
+axs[2, 1].hist(results_socio['Children'].loc[results_socio['Value']==2], color='cadetblue',range=[0,1])
+axs[2, 1].set_title('Children for Cluster 3')
+axs[2, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==2], color='tan', range=[1000,60000])
+axs[2, 2].set_title('Yearly_Salary for Cluster 3')
+
+# cluster 4
+axs[3, 0].hist(results_socio['Education'].loc[results_socio['Value']==3], color='darkseagreen',range=[0,4])
+axs[3, 0].set_title('Education for Cluster 4')
+axs[3, 1].hist(results_socio['Children'].loc[results_socio['Value']==3], color='cadetblue',range=[0,1])
+axs[3, 1].set_title('Children for Cluster 4')
+axs[3, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==3], color='tan', range=[1000,60000])
+axs[3, 2].set_title('Yearly_Salary for Cluster 4')
+
+# cluster 5
+axs[4, 0].hist(results_socio['Education'].loc[results_socio['Value']==4], color='darkseagreen',range=[0,4])
+axs[4, 0].set_title('Education for Cluster 5')
+axs[4, 1].hist(results_socio['Children'].loc[results_socio['Value']==4], color='cadetblue',range=[0,1])
+axs[4, 1].set_title('Children for Cluster 5')
+axs[4, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==4], color='tan', range=[1000,60000])
+axs[4, 2].set_title('Yearly_Salary for Cluster 5')
+
+# cluster 6
+axs[5, 0].hist(results_socio['Education'].loc[results_socio['Value']==5], color='darkseagreen',range=[0,4])
+axs[5, 0].set_title('Education for Cluster 6')
+axs[5, 1].hist(results_socio['Children'].loc[results_socio['Value']==5], color='cadetblue',range=[0,1])
+axs[5, 1].set_title('Children for Cluster 6')
+axs[5, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==5], color='tan', range=[1000,60000])
+axs[5, 2].set_title('Yearly_Salary for Cluster 6')
+
+# cluster 7
+axs[6, 0].hist(results_socio['Education'].loc[results_socio['Value']==6], color='darkseagreen',range=[0,4])
+axs[6, 0].set_title('Education for Cluster 7')
+axs[6, 1].hist(results_socio['Children'].loc[results_socio['Value']==6], color='cadetblue',range=[0,1])
+axs[6, 1].set_title('Children for Cluster 7')
+axs[6, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==6], color='tan', range=[1000,60000])
+axs[6, 2].set_title('Yearly_Salary for Cluster 7')
+plt.show()
