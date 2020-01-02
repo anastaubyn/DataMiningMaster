@@ -1690,7 +1690,6 @@ print('Estimated number of noise points: %d' % n_noise_)
 print("Silhouette Coefficient: %0.3f"
       % metrics.silhouette_score(value_norm, labels))
 
-
 pca = PCA(n_components=2).fit(value_norm)
 pca_2d = pca.transform(value_norm)
 for i in range(0, pca_2d.shape[0]):
@@ -1698,12 +1697,10 @@ for i in range(0, pca_2d.shape[0]):
         c1 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='r',marker='+')
     elif db.labels_[i] == 1:
         c2 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='g',marker='o')
-    elif db.labels_[i] == 2:
-        c4 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='k',marker='v')
     elif db.labels_[i] == -1:
         c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='*')
 
-plt.legend([c1, c2, c3, c4], ['Cluster 1', 'Cluster 2', 'Noise'])
+plt.legend([c1, c2, c3], ['Cluster 1', 'Cluster 2', 'Noise'])
 plt.title('DBSCAN found 2 clusters and noise')
 plt.show()
 
@@ -1870,8 +1867,8 @@ for i in range(0, pca_2d.shape[0]):
         c3 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='b',marker='*')
     elif db.labels_[i] == 7:
         c8 = plt.scatter(pca_2d[i,0],pca_2d[i,1],c='k',marker='3')
-plt.legend([c1, c2, c3, c4,c5,c6,c7,c8], ['Cluster 1', 'Cluster 2','Cluster 3','Cluster 4','Cluster 5','Cluster 6','Cluster 7'])
-plt.title('DBSCAN found 7 clusters and no noise')
+plt.legend([c1, c2, c3, c4,c5,c6,c7,c8], ['Cluster 1', 'Cluster 2','Cluster 3','Cluster 4','Cluster 5','Cluster 6','Cluster 7','Cluster 8'])
+plt.title('DBSCAN found 8 clusters and no noise')
 plt.show()
 
 df_dbscan.reset_index(drop=True, inplace=True) 
@@ -1879,7 +1876,7 @@ labels = pd.DataFrame(labels)
 labels.columns =  ['Value']
 results_socio=pd.concat([labels,df_dbscan],axis=1)
 
-fig, axs = plt.subplots(nrows=7, ncols=3, figsize=(25,30))
+fig, axs = plt.subplots(nrows=8, ncols=3, figsize=(25,30))
 
 # cluster 1
 axs[0, 0].hist(results_socio['Education'].loc[results_socio['Value']==0], color='darkseagreen',range=[0,4])
@@ -1936,4 +1933,13 @@ axs[6, 1].hist(results_socio['Children'].loc[results_socio['Value']==6], color='
 axs[6, 1].set_title('Children for Cluster 7')
 axs[6, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==6], color='tan', range=[1000,60000])
 axs[6, 2].set_title('Yearly_Salary for Cluster 7')
+
+# cluster 8
+axs[7, 0].hist(results_socio['Education'].loc[results_socio['Value']==7], color='darkseagreen',range=[0,4])
+axs[7, 0].set_title('Education for Cluster 8')
+axs[7, 1].hist(results_socio['Children'].loc[results_socio['Value']==7], color='cadetblue',range=[0,1])
+axs[7, 1].set_title('Children for Cluster 8')
+axs[7, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==7], color='tan', range=[1000,60000])
+axs[7, 2].set_title('Yearly_Salary for Cluster 8')
+
 plt.show()
