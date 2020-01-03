@@ -1,9 +1,36 @@
 import sqlite3
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
+from patsy import dmatrices
+import statsmodels.api as sm
+import seaborn as sb
+#pip install kmodes
+from kmodes.kprototypes import KPrototypes as KP
+#Scipy
+import scipy
+from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.cluster import hierarchy
+#Sklearn
+import sklearn
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_samples, silhouette_score
+from sklearn.cluster import DBSCAN
+from sklearn import metrics
+from sklearn.decomposition import PCA
+# Sompy
+from sompy.sompy import SOMFactory
+from sompy.visualization.plot_tools import plot_hex_map
+import logging
+from sompy.visualization.mapview import View2DPacked
+from sompy.visualization.mapview import View2D
+from sompy.visualization.bmuhits import BmuHitsView
+from pylab import rcParams
 
 # =============================================================================
 # IMPORT DATABASE
@@ -255,7 +282,7 @@ descriptive_o = df_insurance.describe().T
 descriptive_o['Nulls'] = df_insurance.shape[0] - descriptive_o['count']
 
 
-grid = sns.PairGrid(data= df_insurance, vars = ['Monthly_Salary', 'CMV', 'Claims_Rate', 'Motor', 'Household',
+grid = sb.PairGrid(data= df_insurance, vars = ['Monthly_Salary', 'CMV', 'Claims_Rate', 'Motor', 'Household',
                                                 'Health', 'Life', 'Work_Compensation'], height = 4)
 grid = grid.map_upper(plt.scatter, color = 'darkseagreen')
 grid = grid.map_diag(plt.hist, bins = 10, color = 'cadetblue')
@@ -268,8 +295,6 @@ grid = grid.map_lower(plt.scatter, color = 'darkseagreen')
 corr = df_insurance.drop(columns=['Cust_ID', 'Area'])
 correlacoes = corr.corr(method='spearman')
 
-import matplotlib.pyplot as plt
-
 correlacoes[np.abs(correlacoes)<0.05] = 0
 
 correlacoes = round(correlacoes,1)
@@ -280,10 +305,10 @@ mask[np.triu_indices_from(mask)] = True
 
 mask_annot = np.absolute(correlacoes.values)>=0.6
 annot1 = np.where(mask_annot, correlacoes.values, np.full((11,11),""))
-cmap = sns.diverging_palette(49, 163, as_cmap=True)
-sns.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
-sns.set(font_scale=1.2)
-sns.set_style('white')
+cmap = sb.diverging_palette(49, 163, as_cmap=True)
+sb.heatmap(correlacoes, mask=mask, cmap=cmap, center=0, square=True, ax=ax, linewidths=.5, annot=annot1, fmt="s", vmin=-1, vmax=1, cbar_kws=dict(ticks=[-1,0,1]))
+sb.set(font_scale=1.2)
+sb.set_style('white')
 bottom, top = ax.get_ylim()
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
@@ -291,10 +316,6 @@ ax.set_ylim(bottom + 0.5, top - 0.5)
 # =============================================================================
 # MISSING VALUES TREATMENT
 # =============================================================================
-
-from patsy import dmatrices
-import statsmodels.api as sm
-
 
 #Regressão de First_Year com CMV, Education, Area
 y,x = dmatrices('First_Year ~ CMV + Education + Area', data = df_insurance, NA_action='drop', return_type='dataframe')
@@ -327,8 +348,6 @@ correlacoes_n = df_insurance.corr()
 # =============================================
 # Replace 2 nulls values in Education using KNN
 # =============================================
-
-from sklearn.neighbors import KNeighborsClassifier
 
 incomplete = df_insurance.loc[df_insurance.Education.isnull()]
 
@@ -367,9 +386,6 @@ res = mod.fit()
 print(res.summary())
 # dá 36% de variância explicada
 
-from sklearn.neighbors import KNeighborsRegressor
-
-
 #criar tabela com as observacoes onde salary é null
 data_to_reg_incomplete=df_insurance[df_insurance['Monthly_Salary'].isna()]
 
@@ -405,7 +421,6 @@ df_insurance= pd.concat([df_insurance, data_to_reg_incomplete])
 # =============================================
 # Replace 13 nulls values in Children using KNN
 # =============================================
-from sklearn.neighbors import KNeighborsClassifier
 
 incomplete = df_insurance.loc[df_insurance.Children.isnull()]
 
@@ -509,8 +524,6 @@ df_insurance = df_insurance.drop(columns=['Negative'])
 # =============================================================================
 corr = df_insurance.drop(columns=['Cust_ID', 'Area'])
 correlacoes = corr.corr(method='spearman')
-import seaborn as sb
-import matplotlib.pyplot as plt
 
 correlacoes[np.abs(correlacoes)<0.05] = 0
 
@@ -572,12 +585,12 @@ ax4 = fig.add_subplot(gs[1,0])
 ax5 = fig.add_subplot(gs[1,1])
 ax6 = fig.add_subplot(gs[1,2])
 
-sns.boxplot(x="Area", y="CMV", data=df_insurance, ax=ax1, color='darkseagreen')
-sns.boxplot(x="Area", y="Claims_Rate", data=df_insurance, ax=ax2, color='darkseagreen')
-sns.boxplot(x="Area", y="Total_Premiums", data=df_insurance, ax=ax3, color='darkseagreen')
-sns.boxplot(x="Area", y="Client_Years", data=df_insurance, ax=ax4, color='darkseagreen')
-sns.boxplot(x="Area", y="Yearly_Salary", data=df_insurance, ax=ax5, color='darkseagreen')
-sns.boxplot(x="Area", y="Effort_Rate", data=df_insurance, ax=ax6, color='darkseagreen')
+sb.boxplot(x="Area", y="CMV", data=df_insurance, ax=ax1, color='darkseagreen')
+sb.boxplot(x="Area", y="Claims_Rate", data=df_insurance, ax=ax2, color='darkseagreen')
+sb.boxplot(x="Area", y="Total_Premiums", data=df_insurance, ax=ax3, color='darkseagreen')
+sb.boxplot(x="Area", y="Client_Years", data=df_insurance, ax=ax4, color='darkseagreen')
+sb.boxplot(x="Area", y="Yearly_Salary", data=df_insurance, ax=ax5, color='darkseagreen')
+sb.boxplot(x="Area", y="Effort_Rate", data=df_insurance, ax=ax6, color='darkseagreen')
 
 
 df_insurance.drop(columns='Area', inplace=True)
@@ -602,27 +615,27 @@ ax9 = fig.add_subplot(gs[2,2])
 ax10 = fig.add_subplot(gs[3,0])
 ax11 = fig.add_subplot(gs[3,1])
 
-sns.boxplot(x="Education", y="CMV", hue="Children", data=df_insurance, ax=ax1, palette='BuGn')
+sb.boxplot(x="Education", y="CMV", hue="Children", data=df_insurance, ax=ax1, palette='BuGn')
 ax1.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Claims_Rate", hue="Children", data=df_insurance, ax=ax2, palette='BuGn')
+sb.boxplot(x="Education", y="Claims_Rate", hue="Children", data=df_insurance, ax=ax2, palette='BuGn')
 ax2.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Total_Premiums", hue="Children", data=df_insurance, ax=ax3, palette='BuGn')
+sb.boxplot(x="Education", y="Total_Premiums", hue="Children", data=df_insurance, ax=ax3, palette='BuGn')
 ax3.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Client_Years", hue="Children", data=df_insurance, ax=ax4, palette='BuGn')
+sb.boxplot(x="Education", y="Client_Years", hue="Children", data=df_insurance, ax=ax4, palette='BuGn')
 ax4.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Yearly_Salary", hue="Children", data=df_insurance, ax=ax5, palette='BuGn')
+sb.boxplot(x="Education", y="Yearly_Salary", hue="Children", data=df_insurance, ax=ax5, palette='BuGn')
 ax5.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Effort_Rate", hue="Children", data=df_insurance, ax=ax6, palette='BuGn')
+sb.boxplot(x="Education", y="Effort_Rate", hue="Children", data=df_insurance, ax=ax6, palette='BuGn')
 ax6.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Motor_Ratio", hue="Children", data=df_insurance, ax=ax7, palette='BuGn')
+sb.boxplot(x="Education", y="Motor_Ratio", hue="Children", data=df_insurance, ax=ax7, palette='BuGn')
 ax7.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Household_Ratio", hue="Children", data=df_insurance, ax=ax8, palette='BuGn')
+sb.boxplot(x="Education", y="Household_Ratio", hue="Children", data=df_insurance, ax=ax8, palette='BuGn')
 ax8.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Health_Ratio", hue="Children", data=df_insurance, ax=ax9, palette='BuGn')
+sb.boxplot(x="Education", y="Health_Ratio", hue="Children", data=df_insurance, ax=ax9, palette='BuGn')
 ax9.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Life_Ratio", hue="Children", data=df_insurance, ax=ax10, palette='BuGn')
+sb.boxplot(x="Education", y="Life_Ratio", hue="Children", data=df_insurance, ax=ax10, palette='BuGn')
 ax10.legend(loc='upper right', title='Children')
-sns.boxplot(x="Education", y="Work_Ratio", hue="Children", data=df_insurance, ax=ax11, palette='BuGn')
+sb.boxplot(x="Education", y="Work_Ratio", hue="Children", data=df_insurance, ax=ax11, palette='BuGn')
 ax11.legend(loc='upper right', title='Children')
 
 # =============================================================================
@@ -632,12 +645,6 @@ ax11.legend(loc='upper right', title='Children')
 # =============================================================================
 # K - PROTOTYPES + HIERARCHICAL 
 # =============================================================================
-
-#pip install kmodes
-from kmodes.kprototypes import KPrototypes as KP
-from sklearn.cluster import AgglomerativeClustering
-from scipy.cluster.hierarchy import dendrogram, linkage
-from scipy.cluster import hierarchy
 
 kproto = df_insurance[['Cust_ID','Yearly_Salary', 'Education', 'Children']]
 kproto.reset_index(drop=True, inplace=True)
@@ -745,18 +752,17 @@ plt.show()
 # K-MEANS + HIERARCHICAL FOR VALUE (MODEL 1 - CMV)
 # =============================================================================
 
-del df_insurance['Value']
+#del df_insurance['Value']
 
 # CMV, Cancelled, Client_Years, Effort_Rate_sqrt, Total_Premiums - VALUE CLUSTERS
+
 # STANDARDIZE DATA
-from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 value = df_insurance[['CMV', 'Effort_Rate_sqrt','Total_Premiums']]
 value_norm = scaler.fit_transform(value)
 value_norm = pd.DataFrame(value_norm, columns = value.columns)
 
 # USE K MEANS
-from sklearn.cluster import KMeans
 
 kmeans = KMeans(n_clusters=20, random_state=0, n_init = 5, max_iter = 200).fit(value_norm)
 
@@ -765,7 +771,6 @@ clusters = kmeans.cluster_centers_
 # save the centroids inverting the normalization
 clusters = pd.DataFrame(scaler.inverse_transform(X = clusters),columns = value.columns)
 
-from sklearn.metrics import silhouette_samples, silhouette_score
 silhouette_avg = silhouette_score(value_norm, kmeans.labels_)
 sample_silhouette_values = silhouette_samples(value_norm, kmeans.labels_)
 
@@ -872,10 +877,7 @@ value = df_insurance[['CMV','Effort_Rate_sqrt','Total_Premiums', 'Cancelled']]
 value_norm = scaler.fit_transform(value)
 value_norm = pd.DataFrame(value_norm, columns = value.columns)
 
-
 #USE K MEANS
-from sklearn.cluster import KMeans
-
 
 kmeans = KMeans(n_clusters=20, random_state=0, n_init = 5, max_iter = 200).fit(value_norm)
 
@@ -1198,11 +1200,7 @@ plt.show()
 # VALUE - with CMV
 # =========================
 
-from sompy.sompy import SOMFactory
-from sompy.visualization.plot_tools import plot_hex_map
-import logging
-
-df_som = df_insurance
+df_som = df_insurance.copy()
 
 X = df_insurance[['CMV','Effort_Rate','Total_Premiums','Cancelled']].values
 
@@ -1227,17 +1225,14 @@ final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
 
 final_clusters.columns = ['CMV','Effort_Rate','Total_Premiums','Cancelled','Value']
 
-from sompy.visualization.mapview import View2DPacked
 view2D  = View2DPacked(10,10,"", text_size=7)
 view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
 plt.show()
 
-from sompy.visualization.mapview import View2D
 view2D  = View2D(10,10,"", text_size=7)
 view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
 plt.show()
 
-from sompy.visualization.bmuhits import BmuHitsView
 vhts  = BmuHitsView(12,12,"Hits Map",text_size=7)
 vhts.show(sm, anotate=True, onlyzeros=False, labelsize=10, cmap="autumn", logaritmic=False)
 
@@ -1246,14 +1241,8 @@ del X, names, final_clusters, my_labels
 # Apply Hierarchical Clustering in the SOM results
 
 # We need scipy to plot the dendrogram 
-import scipy
-from scipy.cluster.hierarchy import dendrogram, linkage
-from scipy.cluster import hierarchy
-from pylab import rcParams
 
 # The final result will use the sklearn
-import sklearn
-from sklearn.cluster import AgglomerativeClustering
 
 plt.figure(figsize=(10,5))
 
@@ -1352,10 +1341,6 @@ del Z, k
 # VALUE - with Claims_Rate
 # =========================
 
-from sompy.sompy import SOMFactory
-from sompy.visualization.plot_tools import plot_hex_map
-import logging
-
 df_som = df_insurance.copy()
 
 X = df_insurance[['Claims_Rate','Effort_Rate','Total_Premiums','Cancelled']].values
@@ -1381,33 +1366,20 @@ final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
 
 final_clusters.columns = ['Claims_Rate','Effort_Rate','Total_Premiums','Cancelled','Value']
 
-from sompy.visualization.mapview import View2DPacked
 view2D  = View2DPacked(10,10,"", text_size=7)
 view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
 plt.show()
 
-from sompy.visualization.mapview import View2D
 view2D  = View2D(10,10,"", text_size=7)
 view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
 plt.show()
 
-from sompy.visualization.bmuhits import BmuHitsView
 vhts  = BmuHitsView(12,12,"Hits Map",text_size=7)
 vhts.show(sm, anotate=True, onlyzeros=False, labelsize=10, cmap="autumn", logaritmic=False)
 
 del X, names, final_clusters, my_labels
 
 # Apply Hierarchical Clustering in the SOM results
-
-# We need scipy to plot the dendrogram 
-import scipy
-from scipy.cluster.hierarchy import dendrogram, linkage
-from scipy.cluster import hierarchy
-from pylab import rcParams
-
-# The final result will use the sklearn
-import sklearn
-from sklearn.cluster import AgglomerativeClustering
 
 plt.figure(figsize=(10,5))
 
@@ -1505,10 +1477,6 @@ del axs
 # PRODUCT - NON RATIOS - CHOSEN!
 # ===============================
 
-from sompy.sompy import SOMFactory
-from sompy.visualization.plot_tools import plot_hex_map
-import logging
-
 X = df_insurance[['Household', 'Life', 'Health', 'Work_Compensation']].values
 
 names = ['Household', 'Life', 'Health', 'Work_Compensation']
@@ -1532,33 +1500,20 @@ final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
 
 final_clusters.columns = ['Household', 'Life', 'Health', 'Work_Compensation','Product']
 
-from sompy.visualization.mapview import View2DPacked
 view2D  = View2DPacked(10,10,"", text_size=7)
 view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
 plt.show()
 
-from sompy.visualization.mapview import View2D
 view2D  = View2D(10,10,"", text_size=7)
 view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
 plt.show()
 
-from sompy.visualization.bmuhits import BmuHitsView
 vhts  = BmuHitsView(12,12,"Hits Map",text_size=7)
 vhts.show(sm, anotate=True, onlyzeros=False, labelsize=10, cmap="autumn", logaritmic=False)
 
 del X, names, final_clusters, my_labels
 
 # Apply Hierarchical Clustering in the SOM results
-
-# We need scipy to plot the dendrogram 
-import scipy
-from scipy.cluster.hierarchy import dendrogram, linkage
-from scipy.cluster import hierarchy
-from pylab import rcParams
-
-# The final result will use the sklearn
-import sklearn
-from sklearn.cluster import AgglomerativeClustering
 
 plt.figure(figsize=(10,5))
 
@@ -1650,12 +1605,6 @@ del label_SOM_value, labels_SOM_product
 # PRODUCT -  RATIOS - NOT CHOSEN
 # ==============================
 
-from sompy.sompy import SOMFactory
-from sompy.visualization.plot_tools import plot_hex_map
-import logging
-
-df_som = df_insurance
-
 X = df_insurance[['Household_Ratio', 'Life_Ratio', 'Health_Ratio', 'Work_Ratio']].values
 
 names = ['Household_Ratio', 'Life_Ratio', 'Health_Ratio', 'Work_Ratio']
@@ -1679,33 +1628,20 @@ final_clusters = pd.concat([final_clusters,my_labels], axis = 1)
 
 final_clusters.columns = ['Household_Ratio', 'Life_Ratio', 'Health_Ratio', 'Work_Ratio','Product']
 
-from sompy.visualization.mapview import View2DPacked
 view2D  = View2DPacked(10,10,"", text_size=7)
 view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
 plt.show()
 
-from sompy.visualization.mapview import View2D
 view2D  = View2D(10,10,"", text_size=7)
 view2D.show(sm, col_sz=5, what = 'codebook',) #which_dim="all", denormalize=True)
 plt.show()
 
-from sompy.visualization.bmuhits import BmuHitsView
 vhts  = BmuHitsView(12,12,"Hits Map",text_size=7)
 vhts.show(sm, anotate=True, onlyzeros=False, labelsize=10, cmap="autumn", logaritmic=False)
 
 del X, names, final_clusters, my_labels
 
 # Apply Hierarchical Clustering in the SOM results
-
-# We need scipy to plot the dendrogram 
-import scipy
-from scipy.cluster.hierarchy import dendrogram, linkage
-from scipy.cluster import hierarchy
-from pylab import rcParams
-
-# The final result will use the sklearn
-import sklearn
-from sklearn.cluster import AgglomerativeClustering
 
 plt.figure(figsize=(10,5))
 
@@ -1797,10 +1733,6 @@ del label_SOM_value, labels_SOM_product
 # DBSCAN
 # =============================================================================
 
-from sklearn.cluster import DBSCAN
-from sklearn import metrics
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
 df_dbscan = df_insurance.copy()
 
 # ==================
