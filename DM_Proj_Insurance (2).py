@@ -1186,7 +1186,7 @@ df_insurance.rename(columns={"Labels": "Product"}, inplace=True)
 
 #plot for profilling
 
-fig, axs = plt.subplots(3, 5, figsize=(15,15))
+fig, axs = plt.subplots(3, 5, figsize=(20,11))
 
 # cluster 0
 axs[0, 0].hist(df_insurance['Health_Ratio'].loc[df_insurance['Product']==0], color='darkseagreen', range=[0,0.6])
