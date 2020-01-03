@@ -10,9 +10,9 @@ import plotly.express as px
 # =============================================================================
 
 
-#my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
+my_path = r'C:\Users\TITA\OneDrive\Faculdade\2 Mestrado\1º semestre\Data Mining\Project\DataMiningMaster\insurance.db'
 #my_path = r'C:\Users\Sofia\OneDrive - NOVAIMS\Nova IMS\Mestrado\Cadeiras\Data mining\Project\DataMiningMaster\insurance.db'
-my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
+#my_path = r'C:\Users\anacs\Documents\NOVA IMS\Mestrado\Data Mining\Projeto\insurance.db'
 
 
 # Connect to the database
@@ -532,23 +532,6 @@ ax.set_ylim(bottom + 0.5, top - 0.5)
 del annot1, mask_annot, bottom, top, mask, corr
 
 # =============================================================================
-# STANDARDIZATION
-# =============================================================================
-
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-
-df_std = scaler.fit_transform(df_insurance[['Yearly_Salary','CMV','Claims_Rate','Client_Years',
-                                            'Effort_Rate','Effort_Rate_sqrt','Total_Premiums']])
-df_std = pd.DataFrame(df_std, columns = ['Yearly_Salary_std','CMV_std','Claims_Rate_std',
-                                         'Client_Years_std','Effort_Rate_std',
-                                         'Effort_Rate_sqrt_std','Total_Premiums_std'])
-
-df_insurance.reset_index(inplace=True, drop=True)
-    
-df_insurance= pd.concat([df_insurance, df_std], axis=1, sort=False)
-
-# =============================================================================
 # OUTLIERS FOR NEW VARIABLES
 # =============================================================================
 outliers_fracos = outliers_fracos.append(df_insurance[(df_insurance.Total_Premiums<490)]) 
@@ -642,9 +625,9 @@ ax10.legend(loc='upper right', title='Children')
 sns.boxplot(x="Education", y="Work_Ratio", hue="Children", data=df_insurance, ax=ax11, palette='BuGn')
 ax11.legend(loc='upper right', title='Children')
 
-## =============================================================================
-## CLUSTERING ALGORITHMS
-## =============================================================================
+# =============================================================================
+# CLUSTERING ALGORITHMS
+# =============================================================================
 
 # =============================================================================
 # K - PROTOTYPES + HIERARCHICAL 
@@ -662,11 +645,11 @@ kproto.reset_index(drop=True, inplace=True)
 kp = KP(n_clusters=15, init='Huang', verbose=2)
 clusters = kp.fit_predict(kproto[['Yearly_Salary','Education','Children']], categorical=[1,2])
 
-centro=kp.cluster_centroids_
-kproto['Label']=kp.labels_
+centro = kp.cluster_centroids_
+kproto['Label'] = kp.labels_
 kproto.Label = kproto.Label.apply(pd.to_numeric)
 
-centroids=pd.DataFrame()
+centroids = pd.DataFrame()
 centroids['Yearly_Salary']=pd.DataFrame(centro[0]).loc[:,0]
 centroids['Education']=pd.DataFrame(centro[1]).loc[:,0]
 centroids['Children']=pd.DataFrame(centro[1]).loc[:,1]
@@ -690,13 +673,9 @@ dendrogram(Z,
            show_contracted=True,
            show_leaf_counts=True)
 cur_axes = plt.gca()
-#cur_axes.axes.get_xaxis().set_visible(False)
-#cur_axes.axes.get_yaxis().set_visible(False)
 plt.xlabel('Cluster Size')
 plt.ylabel('Distance')
 
-
-#ax2.set_xticks([])
 ax2.set_yticks([])
 ax2.axis('off')
 
@@ -710,8 +689,6 @@ labels.columns =  ['Socio-Demo']
 
 centroids = pd.concat([centroids, labels], axis = 1)
 centroids['Label']=[i for i in range(0,15)]
-
-
 
 j=0
 for i in range(0, len(centroids['Socio-Demo'])):
@@ -765,27 +742,27 @@ plt.show()
 
 
 # =============================================================================
-# K-MEANS + HIERARCHICAL FOR VALUE (MODEL 1)
+# K-MEANS + HIERARCHICAL FOR VALUE (MODEL 1 - CMV)
 # =============================================================================
 
+del df_insurance['Value']
+
 # CMV, Cancelled, Client_Years, Effort_Rate_sqrt, Total_Premiums - VALUE CLUSTERS
-#NORMALIZE DATA
+# STANDARDIZE DATA
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
-value = df_insurance[['CMV','Client_Years','Effort_Rate_sqrt','Total_Premiums', 'Cancelled']]
+value = df_insurance[['CMV', 'Effort_Rate_sqrt','Total_Premiums']]
 value_norm = scaler.fit_transform(value)
 value_norm = pd.DataFrame(value_norm, columns = value.columns)
 
-
-#USE K MEANS
+# USE K MEANS
 from sklearn.cluster import KMeans
-
 
 kmeans = KMeans(n_clusters=20, random_state=0, n_init = 5, max_iter = 200).fit(value_norm)
 
 clusters = kmeans.cluster_centers_
 
-#save the centroids inverting the normalization
+# save the centroids inverting the normalization
 clusters = pd.DataFrame(scaler.inverse_transform(X = clusters),columns = value.columns)
 
 from sklearn.metrics import silhouette_samples, silhouette_score
@@ -795,6 +772,7 @@ sample_silhouette_values = silhouette_samples(value_norm, kmeans.labels_)
 cluster_labels = pd.DataFrame(kmeans.labels_)
 cluster_labels.columns=['Labels']
 
+value.reset_index(drop=True, inplace=True)
 value = pd.concat([value, cluster_labels], axis = 1)
 
 del silhouette_avg, sample_silhouette_values, cluster_labels
@@ -804,9 +782,9 @@ Z = linkage(clusters, method = "ward")
 
 hierarchy.set_link_color_palette(['darkseagreen','cadetblue', 'seagreen', 'mediumseagreen', 'c','mediumturquoise','turquoise'])
 
-fig = plt.figure(figsize=(10, 20))
-ax2 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
-Z = hierarchy.linkage(clusters, method='ward')
+#fig = plt.figure(figsize=(10, 20))
+#ax2 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
+#Z = hierarchy.linkage(clusters, method='ward')
 
 dendrogram(Z,
            truncate_mode="lastp",
@@ -816,9 +794,8 @@ dendrogram(Z,
            leaf_font_size=10.,
            show_contracted=True,
            show_leaf_counts=True)
-cur_axes = plt.gca()
-#cur_axes.axes.get_xaxis().set_visible(False)
-#cur_axes.axes.get_yaxis().set_visible(False)
+
+#cur_axes = plt.gca()
 plt.xlabel('Cluster Size')
 plt.ylabel('Distance')
 plt.show()
@@ -827,70 +804,65 @@ Hclustering = AgglomerativeClustering(n_clusters=3, affinity="euclidean", linkag
 HC = Hclustering.fit(clusters)
 
 labels = pd.DataFrame(HC.labels_)
-labels.columns =  ['Socio-Demo']
+labels.columns =  ['Value']
 
 clusters = pd.concat([clusters, labels], axis = 1)
 clusters['Label']=[i for i in range(0,20)]
 
 
 j=0
-for i in range(0, len(clusters['Socio-Demo'])):
-    value['Labels']=value['Labels'].replace(clusters['Label'][i], clusters['Socio-Demo'][j])
+for i in range(0, len(clusters['Value'])):
+    value['Labels']=value['Labels'].replace(clusters['Label'][i], clusters['Value'][j])
     j+=1
 
+df_insurance.reset_index(drop=True, inplace=True)
 df_insurance = pd.concat([df_insurance, value['Labels']], axis=1)
 df_insurance.rename(columns={"Labels": "Value"}, inplace=True)
 
-
-fig, axs = plt.subplots(3, 5, figsize=(20,15))
+fig, axs = plt.subplots(3, 4, figsize=(15,12))
 
 # cluster 0
 axs[0, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==0], color='darkseagreen', range=[-450,1250])
 axs[0, 0].set_title('CMV for Cluster 1')
-axs[0, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==0], color='cadetblue', range=[20,45])
-axs[0, 1].set_title('Client_Years for Cluster 1')
-axs[0, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==0], color='tan', range=[0,0.2])
-axs[0, 2].set_title('Effort_Rate for Cluster 1')
-axs[0, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==0], color='dimgrey', range=[500,1600])
-axs[0, 3].set_title('Total_Premiums for Cluster 1')
-axs[0, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==0], color='rosybrown', range=[0,1])
-axs[0, 4].set_title('Cancelled for Cluster 1')
-plt.sca(axs[1, 4])
+axs[0, 1].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==0], color='cadetblue', range=[0,0.2])
+axs[0, 1].set_title('Effort_Rate for Cluster 1')
+axs[0, 2].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==0], color='tan', range=[500,1600])
+axs[0, 2].set_title('Total_Premiums for Cluster 1')
+axs[0, 3].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==0], color='dimgrey', range=[0,1])
+axs[0, 3].set_title('Cancelled for Cluster 1')
+plt.sca(axs[0, 3])
 plt.xticks([0, 1])
 
 # cluster 1
 axs[1, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==1], color='darkseagreen', range=[-450,1250])
 axs[1, 0].set_title('CMV for Cluster 2')
-axs[1, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==1], color='cadetblue', range=[20,45])
-axs[1, 1].set_title('Client_Years for Cluster 2')
-axs[1, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==1], color='tan', range=[0,0.2])
-axs[1, 2].set_title('Effort_Rate for Cluster 2')
-axs[1, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==1], color='dimgrey', range=[500,1600])
-axs[1, 3].set_title('Total_Premiums for Cluster 2')
-axs[1, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==1], color='rosybrown', range=[0,1])
-axs[1, 4].set_title('Cancelled for Cluster 2')
-plt.sca(axs[1, 4])
+axs[1, 1].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==1], color='cadetblue', range=[0,0.2])
+axs[1, 1].set_title('Effort_Rate for Cluster 2')
+axs[1, 2].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==1], color='tan', range=[500,1600])
+axs[1, 2].set_title('Total_Premiums for Cluster 2')
+axs[1, 3].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==1], color='dimgrey', range=[0,1])
+axs[1, 3].set_title('Cancelled for Cluster 2')
+plt.sca(axs[1, 3])
 plt.xticks([0, 1])
 
 # cluster 2
 axs[2, 0].hist(df_insurance['CMV'].loc[df_insurance['Value']==2], color='darkseagreen', range=[-450,1250])
 axs[2, 0].set_title('CMV for Cluster 3')
-axs[2, 1].hist(df_insurance['Client_Years'].loc[df_insurance['Value']==2], color='cadetblue', range=[20,45])
-axs[2, 1].set_title('Client_Years for Cluster 3')
-axs[2, 2].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==2], color='tan', range=[0,0.2])
-axs[2, 2].set_title('Effort_Rate for Cluster 3')
-axs[2, 3].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==2], color='dimgrey', range=[500,1600])
-axs[2, 3].set_title('Total_Premiums for Cluster 3')
-axs[2, 4].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==2], color='rosybrown', range=[0,1])
-axs[2, 4].set_title('Cancelled for Cluster 3')
-plt.sca(axs[2, 4])
+axs[2, 1].hist(df_insurance['Effort_Rate'].loc[df_insurance['Value']==2], color='cadetblue', range=[0,0.2])
+axs[2, 1].set_title('Effort_Rate for Cluster 3')
+axs[2, 2].hist(df_insurance['Total_Premiums'].loc[df_insurance['Value']==2], color='tan', range=[500,1600])
+axs[2, 2].set_title('Total_Premiums for Cluster 3')
+axs[2, 3].hist(df_insurance['Cancelled'].loc[df_insurance['Value']==2], color='dimgrey', range=[0,1])
+axs[2, 3].set_title('Cancelled for Cluster 3')
+plt.sca(axs[2, 3])
 plt.xticks([0, 1])
 
 plt.show()
 
+df_insurance['Value'].value_counts()
 
 # =============================================================================
-# K-MEANS + HIERARCHICAL FOR VALUE (MODEL 2)
+# K-MEANS + HIERARCHICAL FOR VALUE (MODEL 2 - CLAIMS RATE)
 # =============================================================================
 
 # Cancelled, Claims_Rate, Client_Years, Effort_Rate_sqrt, Total_Premiums
@@ -1004,10 +976,9 @@ plt.xticks([0, 1])
 plt.show()
 
 # =============================================================================
-# K MEANS + HIERARCHICAL FOR PRODUCT (MODEL 1)
+# K MEANS + HIERARCHICAL FOR PRODUCT (MODEL 1 - NON RATIOS)
 # =============================================================================
-#Health, Household_sqrt, Life_sqrt, Work_sqrt
-
+# Health, Household_sqrt, Life_sqrt, Work_sqrt
 
 scaler = StandardScaler()
 product = df_insurance[['Health', 'Household_sqrt', 'Life_sqrt', 'Work_sqrt']].reindex()
@@ -1068,9 +1039,6 @@ df_insurance.reset_index(drop=True, inplace=True)
 df_insurance = pd.concat([df_insurance, product['Labels']], axis=1)
 df_insurance.rename(columns={"Labels": "Product"}, inplace=True)
 
-
-
-
 #plot for profilling
 
 fig, axs = plt.subplots(3, 5, figsize=(20,11))
@@ -1117,9 +1085,9 @@ plt.show()
 del scaler, product, kmeans, clusters, cluster_labels, Z, fig, ax2, cur_axes, Hclustering, HC, labels, i, j
 
 # =============================================================================
-# K MEANS + HIERARCHICAL FOR PRODUCT (MODEL 2)
+# K MEANS + HIERARCHICAL FOR PRODUCT (MODEL 2 - RATIOS)
 # =============================================================================
-#Health_Ratio, Life_Ratio_sqrt, Work_Ratio_sqrt, Household_Ratio_sqrt
+# Health_Ratio, Life_Ratio_sqrt, Work_Ratio_sqrt, Household_Ratio_sqrt
 
 scaler = StandardScaler()
 product = df_insurance[['Health_Ratio', 'Life_Ratio_sqrt', 'Work_Ratio_sqrt', 'Household_Ratio_sqrt']].reindex()
@@ -1139,8 +1107,7 @@ product.reset_index(drop=True, inplace=True)
 product = pd.concat([product, cluster_labels], axis = 1)
 
 
-
-#HIERARCHICAL
+# HIERARCHICAL
 
 Z = linkage(clusters, method = "ward")
 
@@ -1180,9 +1147,6 @@ for i in range(0, len(clusters['Socio-Demo'])):
 df_insurance.reset_index(drop=True, inplace=True)
 df_insurance = pd.concat([df_insurance, product['Labels']], axis=1)
 df_insurance.rename(columns={"Labels": "Product"}, inplace=True)
-
-
-
 
 #plot for profilling
 
@@ -1330,8 +1294,6 @@ label_SOM_value.columns =  ['Value']
 df_som.reset_index(drop=True, inplace=True) 
 df_som = pd.DataFrame(pd.concat([df_som, label_SOM_value],axis=1))
 
-del Z, k
-
 
 fig, axs = plt.subplots(nrows=3, ncols=5, figsize=(20,13))
 
@@ -1384,6 +1346,7 @@ df_som['Value'].value_counts() # number of observations per cluster
 df_som.groupby(["Value", "Cancelled"])['Cust_ID'].count()
 
 del axs
+del Z, k
 
 # =========================
 # VALUE - with Claims_Rate
@@ -1393,7 +1356,7 @@ from sompy.sompy import SOMFactory
 from sompy.visualization.plot_tools import plot_hex_map
 import logging
 
-df_som = df_insurance
+df_som = df_insurance.copy()
 
 X = df_insurance[['Claims_Rate','Effort_Rate','Total_Premiums','Cancelled']].values
 
@@ -1538,15 +1501,13 @@ df_som['Value'].value_counts() # number of observations per cluster
 
 del axs
 
-# =========================
-# PRODUCT - NON RATIOS - CHOOSEN!
-# =========================
+# ===============================
+# PRODUCT - NON RATIOS - CHOSEN!
+# ===============================
 
 from sompy.sompy import SOMFactory
 from sompy.visualization.plot_tools import plot_hex_map
 import logging
-
-df_som = df_insurance
 
 X = df_insurance[['Household', 'Life', 'Health', 'Work_Compensation']].values
 
@@ -1683,10 +1644,11 @@ plt.show()
 df_som['Product'].value_counts() # number of observations per cluster
 
 del axs
+del label_SOM_value, labels_SOM_product
 
-# =========================
+# ==============================
 # PRODUCT -  RATIOS - NOT CHOSEN
-# =========================
+# ==============================
 
 from sompy.sompy import SOMFactory
 from sompy.visualization.plot_tools import plot_hex_map
@@ -1828,7 +1790,7 @@ plt.show()
 df_som['Product'].value_counts() # number of observations per cluster
 
 del axs
-
+del label_SOM_value, labels_SOM_product
 
 
 # =============================================================================
@@ -1839,10 +1801,11 @@ from sklearn.cluster import DBSCAN
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-df_dbscan = df_insurance
-###############
-# PRODUCT
-###############
+df_dbscan = df_insurance.copy()
+
+# ==================
+# PRODUCT NON RATIOS
+# ==================
 
 db = DBSCAN(eps=0.7, min_samples=15).fit(product_norm)
 labels = db.labels_
@@ -1874,9 +1837,9 @@ plt.legend([c1, c2, c3], ['Cluster 1', 'Cluster 2','Noise'])
 plt.title('DBSCAN finds 2 clusters and noise')
 plt.show()
 
-###############
+# ==================
 # PRODUCT RATIOS
-###############
+# ==================
 
 product_ratios = df_insurance[['Health_Ratio', 'Life_Ratio', 'Work_Ratio']].reindex()
 
@@ -1908,10 +1871,10 @@ plt.legend([c1, c3], ['Cluster 1', 'Noise'])
 plt.title('DBSCAN found 1 cluster and noise')
 plt.show()
 
-
-#################
+# ==================
 # VALUE WITH CMV
-#################
+# ==================
+
 db = DBSCAN(eps=0.7, min_samples=10).fit(value_norm)
 labels = db.labels_
 
@@ -1979,9 +1942,10 @@ axs[1, 4].set_title('Claims_Rate for Cluster 2')
 
 plt.show()
 
-########################
+# ======================
 # VALUE WITH CLAIMS_RATE
-########################
+# ======================
+
 scaler = StandardScaler()
 value = df_insurance[['Claims_Rate','Client_Years','Effort_Rate','Total_Premiums', 'Cancelled']]
 value_norm2 = scaler.fit_transform(value)
@@ -2055,9 +2019,9 @@ axs[1, 4].set_title('Claims_Rate for Cluster 2')
 
 plt.show()
 
-########################
-# SOCIO DEMOGRAPHIC VIEW
-########################
+# ======================
+# SOCIODEMOGRAPHIC
+# ======================
 
 #Create dummy variables for education
 for elem in df_dbscan['Education'].unique():
@@ -2213,9 +2177,9 @@ axs[7, 2].set_title('Yearly_Salary for Cluster 8')
 
 plt.show()
 
-##############
-#Join clusters
-##############
+
+# Join clusters 
+# ======================
 
 df_dbscan.reset_index(drop=True, inplace=True) 
 labels.replace([2,6],0,inplace=True)
@@ -2289,4 +2253,51 @@ axs[3, 2].hist(results_socio['Yearly_Salary'].loc[results_socio['Value']==3], co
 axs[3, 2].set_title('Yearly_Salary for Cluster 4')
 
 plt.show()
+
+results_socio.rename(columns={"Value": "SocioDemo"}, inplace=True)
+results_socio['SocioDemo'].value_counts()
+
+
+del axs, counts_clusters, df_dbscan, elem, i, n_noise_, pca_2d, salary, socio_view 
+del unique_clusters, labels, n_clusters_
+
+# =============================================================================
+# FINAL CLUSTERS
+# =============================================================================
+
+final_clusters1 = df_som[['Cust_ID', 'Value', 'Product']]
+final_clusters2 = results_socio[['Cust_ID', 'SocioDemo']]
+
+final_clusters = final_clusters1.merge(final_clusters2, on='Cust_ID')
+
+df_insurance_final = df_insurance.merge(final_clusters, on='Cust_ID')
+
+del final_clusters1, final_clusters2, final_clusters
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
