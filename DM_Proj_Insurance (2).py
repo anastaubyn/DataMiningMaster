@@ -2300,9 +2300,13 @@ del final_clusters1, final_clusters2, final_clusters, comb, Cluster_N, cluster, 
 del correlacoes, correlacoes_n
 del results_socio, df_som
 
+# =============================================================================
+# REASSIGNMENT OF INDIVIDUALS TO CLUSTERS
+# =============================================================================
 
-
-
+# =============================================================================
+# REINSERTION OF OUTLIERS
+# =============================================================================
 
 
 
