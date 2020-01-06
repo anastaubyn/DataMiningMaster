@@ -164,7 +164,7 @@ fig.show()
 fig = px.box(df_insurance, y=df_insurance.Monthly_Salary, color_discrete_sequence=['dimgrey'], template='plotly_white')
 fig.show()
 
-good_outliers = df_insurance[(df_insurance.Monthly_Salary>30000)]
+good_outliers = df_insurance[(df_insurance.Monthly_Salary>30000)].copy()
 df_insurance=df_insurance[(df_insurance.Monthly_Salary<=30000) | (df_insurance.Monthly_Salary.isnull())] #2 rows dropped
 #diff=df_insurance[~df_insurance.index.isin(df_insurance1.index)]
 
@@ -178,7 +178,7 @@ fig.show()
     #Remover o outlier dramático
     
 # remover outliers e coloca-los num dataset
-week_outliers = df_insurance[(df_insurance.CMV<-420)] # 15 rows
+week_outliers = df_insurance[(df_insurance.CMV<-420)].copy() # 15 rows
 
 df_insurance=df_insurance[(df_insurance.CMV>=-125000) | (df_insurance.CMV.isnull())] #1 row dropped
 df_insurance=df_insurance[(df_insurance.CMV>=-20000) | (df_insurance.CMV.isnull())] #5 rows dropped
@@ -467,57 +467,75 @@ del mask_annot, top, bottom, annot1
 # TRANSFORM VARIABLES - NEW ONES
 # =============================================================================
 
-df_insurance['Client_Years']=2016-df_insurance['First_Year']
+def new_variables(df_insurance):
+    df_insurance['Client_Years']=2016-df_insurance['First_Year']
+    
+    df_insurance['Yearly_Salary']=12*df_insurance['Monthly_Salary']
+    
+    df_insurance['Total_Premiums']=df_insurance.loc[:,['Motor','Household','Health','Life','Work_Compensation']][df_insurance>0].sum(1)
+    
+    # DELETE ROWS WHERE TOTAL_PREMIUMS EQUALS 0
+    df_insurance = df_insurance[df_insurance['Total_Premiums'] != 0] # 12 rows dropped
+    
+    
+    df_insurance['Effort_Rate']=df_insurance['Total_Premiums']/df_insurance['Yearly_Salary']
+    
+    df_insurance['Motor_Ratio']=df_insurance['Motor']/df_insurance['Total_Premiums']
+    df_insurance['Motor_Ratio']=df_insurance['Motor_Ratio'].where(df_insurance['Motor_Ratio']>0, 0)
+    
+    df_insurance['Household_Ratio']=df_insurance['Household']/df_insurance['Total_Premiums']
+    df_insurance['Household_Ratio']=df_insurance['Household_Ratio'].where(df_insurance['Household_Ratio']>0, 0)
+    
+    df_insurance['Health_Ratio']=df_insurance['Health']/df_insurance['Total_Premiums']
+    df_insurance['Health_Ratio']=df_insurance['Health_Ratio'].where(df_insurance['Health_Ratio']>0, 0)
+    
+    df_insurance['Life_Ratio']=df_insurance['Life']/df_insurance['Total_Premiums']
+    df_insurance['Life_Ratio']=df_insurance['Life_Ratio'].where(df_insurance['Life_Ratio']>0, 0)
+    
+    df_insurance['Work_Ratio']=df_insurance['Work_Compensation']/df_insurance['Total_Premiums']
+    df_insurance['Work_Ratio']=df_insurance['Work_Ratio'].where(df_insurance['Work_Ratio']>0, 0)
+    
+    
+    df_insurance['Negative']=df_insurance.iloc[:,7:13][df_insurance<0].sum(1)
+    
+    #df_insurance['PayedAdvance_Ratio']=abs(df_insurance['negative'])/df_insurance['Total_Premiums']
+    df_insurance['Cancelled']=np.where(df_insurance['Negative']<0, 1, 0)
+    
+    df_insurance['Negative']=abs(df_insurance['Negative'])
+    
+    
+    df_insurance = df_insurance.drop(columns=['Monthly_Salary','First_Year'])
+    
+    # SQRT's from original variables with long tails
+    df_insurance['Life_sqrt'] = np.sqrt(df_insurance['Life']+abs(df_insurance['Life'].min()))
+    df_insurance['Work_sqrt'] = np.sqrt(df_insurance['Work_Compensation']+abs(df_insurance['Work_Compensation'].min()))
+    df_insurance['Household_sqrt'] = np.sqrt(df_insurance['Household']+abs(df_insurance['Household'].min()))
+    
+    # SQRT's from new variables with long tails
+    #df_insurance['Total_Premiums_sqrt'] = np.sqrt(df_insurance['Total_Premiums']) não vale a pena
+    df_insurance['Effort_Rate_sqrt'] = np.sqrt(df_insurance['Effort_Rate'])
+    df_insurance['Life_Ratio_sqrt'] = np.sqrt(df_insurance['Life_Ratio'])
+    df_insurance['Work_Ratio_sqrt'] = np.sqrt(df_insurance['Work_Ratio']) 
+    df_insurance['Household_Ratio_sqrt'] = np.sqrt(df_insurance['Household_Ratio'])
+    
+    df_insurance = df_insurance.drop(columns=['Negative'])
+    
+    return df_insurance
 
-df_insurance['Yearly_Salary']=12*df_insurance['Monthly_Salary']
+df_insurance = new_variables(df_insurance)
+good_outliers = new_variables(good_outliers)
+week_outliers = new_variables(week_outliers)
 
-df_insurance['Total_Premiums']=df_insurance.loc[:,['Motor','Household','Health','Life','Work_Compensation']][df_insurance>0].sum(1)
+#good_outliers['Motor'].fillna(0, inplace = True)
+#good_outliers['Health'].fillna(0, inplace = True)
+#good_outliers['Life'].fillna(0, inplace = True)
+#good_outliers['Work_Compensation'].fillna(0, inplace = True)
+#
+#week_outliers['Motor'].fillna(0, inplace = True)
+#week_outliers['Health'].fillna(0, inplace = True)
+#week_outliers['Life'].fillna(0, inplace = True)
+#good_outliers['Work_Compensation'].fillna(0, inplace = True)
 
-# DELETE ROWS WHERE TOTAL_PREMIUMS EQUALS 0
-df_insurance = df_insurance[df_insurance['Total_Premiums'] != 0] # 12 rows dropped
-
-
-df_insurance['Effort_Rate']=df_insurance['Total_Premiums']/df_insurance['Yearly_Salary']
-
-df_insurance['Motor_Ratio']=df_insurance['Motor']/df_insurance['Total_Premiums']
-df_insurance['Motor_Ratio']=df_insurance['Motor_Ratio'].where(df_insurance['Motor_Ratio']>0, 0)
-
-df_insurance['Household_Ratio']=df_insurance['Household']/df_insurance['Total_Premiums']
-df_insurance['Household_Ratio']=df_insurance['Household_Ratio'].where(df_insurance['Household_Ratio']>0, 0)
-
-df_insurance['Health_Ratio']=df_insurance['Health']/df_insurance['Total_Premiums']
-df_insurance['Health_Ratio']=df_insurance['Health_Ratio'].where(df_insurance['Health_Ratio']>0, 0)
-
-df_insurance['Life_Ratio']=df_insurance['Life']/df_insurance['Total_Premiums']
-df_insurance['Life_Ratio']=df_insurance['Life_Ratio'].where(df_insurance['Life_Ratio']>0, 0)
-
-df_insurance['Work_Ratio']=df_insurance['Work_Compensation']/df_insurance['Total_Premiums']
-df_insurance['Work_Ratio']=df_insurance['Work_Ratio'].where(df_insurance['Work_Ratio']>0, 0)
-
-
-df_insurance['Negative']=df_insurance.iloc[:,7:13][df_insurance<0].sum(1)
-
-#df_insurance['PayedAdvance_Ratio']=abs(df_insurance['negative'])/df_insurance['Total_Premiums']
-df_insurance['Cancelled']=np.where(df_insurance['Negative']<0, 1, 0)
-
-df_insurance['Negative']=abs(df_insurance['Negative'])
-
-
-df_insurance = df_insurance.drop(columns=['Monthly_Salary','First_Year'])
-
-# SQRT's from original variables with long tails
-df_insurance['Life_sqrt'] = np.sqrt(df_insurance['Life']+abs(df_insurance['Life'].min()))
-df_insurance['Work_sqrt'] = np.sqrt(df_insurance['Work_Compensation']+abs(df_insurance['Work_Compensation'].min()))
-df_insurance['Household_sqrt'] = np.sqrt(df_insurance['Household']+abs(df_insurance['Household'].min()))
-
-# SQRT's from new variables with long tails
-#df_insurance['Total_Premiums_sqrt'] = np.sqrt(df_insurance['Total_Premiums']) não vale a pena
-df_insurance['Effort_Rate_sqrt'] = np.sqrt(df_insurance['Effort_Rate'])
-df_insurance['Life_Ratio_sqrt'] = np.sqrt(df_insurance['Life_Ratio'])
-df_insurance['Work_Ratio_sqrt'] = np.sqrt(df_insurance['Work_Ratio']) 
-df_insurance['Household_Ratio_sqrt'] = np.sqrt(df_insurance['Household_Ratio'])
-
-df_insurance = df_insurance.drop(columns=['Negative'])
 
 # =============================================================================
 # CORRELATIONS WITH NEW VARIABLES
@@ -594,6 +612,8 @@ sb.boxplot(x="Area", y="Effort_Rate", data=df_insurance, ax=ax6, color='darkseag
 
 
 df_insurance.drop(columns='Area', inplace=True)
+good_outliers.drop(columns='Area', inplace=True)
+week_outliers.drop(columns='Area', inplace=True)
 
 # ALL BOXPLOTS 
 
@@ -637,6 +657,9 @@ sb.boxplot(x="Education", y="Life_Ratio", hue="Children", data=df_insurance, ax=
 ax10.legend(loc='upper right', title='Children')
 sb.boxplot(x="Education", y="Work_Ratio", hue="Children", data=df_insurance, ax=ax11, palette='BuGn')
 ax11.legend(loc='upper right', title='Children')
+
+
+outliers = pd.concat([good_outliers, week_outliers])
 
 # =============================================================================
 # CLUSTERING ALGORITHMS
@@ -2206,7 +2229,7 @@ df_insurance_final = df_insurance.merge(final_clusters, on='Cust_ID')
 # Label the clusters
 df_insurance_final['Value'].replace([0, 1, 2], ['Silver','Bronze','Gold'], inplace=True)
 df_insurance_final['Product'].replace([0, 1, 2], ['Health','Household_Life_Work','Motor'], inplace=True)
-#df_insurance_final['SocioDemo'].replace([0, 1, 3, 5], ['Silver','Bronze','Gold','Gold'])
+df_insurance_final['SocioDemo'].replace([0, 1, 3, 5], ['HighEduc_Child','BasicEduc_NoChild','BasicEduc_Child','HighEduc_NoChild'], inplace=True)
 
 #Count the number of individuals per cluster (33 clusters)
 comb = df_insurance_final.groupby(["Value", "Product", 'SocioDemo'])['Cust_ID'].count()
@@ -2224,69 +2247,69 @@ clusters_list = df_insurance_final['Clusters'].unique().tolist()
 
 Cluster_N = [] 
 for cluster in df_insurance_final['Clusters']: 
-    if cluster == 'Silver_Health_0': 
+    if cluster == 'Silver_Health_HighEduc_Child': 
         Cluster_N.append("0") 
-    elif cluster == 'Gold_Household_Life_Work_0': 
+    elif cluster == 'Gold_Household_Life_Work_HighEduc_Child': 
         Cluster_N.append("1")
-    elif cluster == 'Silver_Household_Life_Work_1': 
+    elif cluster == 'Silver_Household_Life_Work_BasicEduc_NoChild': 
         Cluster_N.append("2")
-    elif cluster == 'Silver_Motor_0': 
+    elif cluster == 'Silver_Motor_HighEduc_Child': 
         Cluster_N.append("3")
-    elif cluster == 'Silver_Health_3': 
+    elif cluster == 'Silver_Health_BasicEduc_Child': 
         Cluster_N.append("4")
-    elif cluster == 'Gold_Household_Life_Work_5': 
+    elif cluster == 'Gold_Household_Life_Work_HighEduc_NoChild': 
         Cluster_N.append("5")
-    elif cluster == 'Bronze_Motor_0': 
+    elif cluster == 'Bronze_Motor_HighEduc_Child': 
         Cluster_N.append("6")
-    elif cluster == 'Bronze_Health_0': 
+    elif cluster == 'Bronze_Health_HighEduc_Child': 
         Cluster_N.append("7")
-    elif cluster == 'Gold_Health_5': 
+    elif cluster == 'Gold_Health_HighEduc_NoChild': 
         Cluster_N.append("8")
-    elif cluster == 'Bronze_Health_3': 
+    elif cluster == 'Bronze_Health_BasicEduc_Child': 
         Cluster_N.append("9")
-    elif cluster == 'Silver_Motor_3': 
+    elif cluster == 'Silver_Motor_BasicEduc_Child': 
         Cluster_N.append("10")
-    elif cluster == 'Bronze_Motor_3': 
+    elif cluster == 'Bronze_Motor_BasicEduc_Child': 
         Cluster_N.append("11")
-    elif cluster == 'Silver_Household_Life_Work_3': 
+    elif cluster == 'Silver_Household_Life_Work_BasicEduc_Child': 
         Cluster_N.append("12") 
-    elif cluster == 'Silver_Household_Life_Work_0': 
+    elif cluster == 'Silver_Household_Life_Work_HighEduc_Child': 
         Cluster_N.append("13")
-    elif cluster == 'Bronze_Household_Life_Work_0': 
+    elif cluster == 'Bronze_Household_Life_Work_HighEduc_Child': 
         Cluster_N.append("14")
-    elif cluster == 'Gold_Health_0': 
+    elif cluster == 'Gold_Health_HighEduc_Child': 
         Cluster_N.append("15")
-    elif cluster == 'Gold_Health_3': 
+    elif cluster == 'Gold_Health_BasicEduc_Child': 
         Cluster_N.append("16")
-    elif cluster == 'Silver_Health_5': 
+    elif cluster == 'Silver_Health_HighEduc_NoChild': 
         Cluster_N.append("17")
-    elif cluster == 'Silver_Health_1': 
+    elif cluster == 'Silver_Health_BasicEduc_NoChild': 
         Cluster_N.append("18")
-    elif cluster == 'Silver_Household_Life_Work_5': 
+    elif cluster == 'Silver_Household_Life_Work_HighEduc_NoChild': 
         Cluster_N.append("19")
-    elif cluster == 'Gold_Household_Life_Work_3': 
+    elif cluster == 'Gold_Household_Life_Work_BasicEduc_Child': 
         Cluster_N.append("20")
-    elif cluster == 'Bronze_Household_Life_Work_3': 
+    elif cluster == 'Bronze_Household_Life_Work_BasicEduc_Child': 
         Cluster_N.append("21")
-    elif cluster == 'Bronze_Health_5': 
+    elif cluster == 'Bronze_Health_HighEduc_NoChild': 
         Cluster_N.append("22")
-    elif cluster == 'Gold_Household_Life_Work_1': 
+    elif cluster == 'Gold_Household_Life_Work_BasicEduc_NoChild': 
         Cluster_N.append("23")
-    elif cluster == 'Silver_Motor_5': 
+    elif cluster == 'Silver_Motor_HighEduc_NoChild': 
         Cluster_N.append("24")
-    elif cluster == 'Gold_Health_1': 
+    elif cluster == 'Gold_Health_BasicEduc_NoChild': 
         Cluster_N.append("25")
-    elif cluster == 'Bronze_Motor_5': 
+    elif cluster == 'Bronze_Motor_HighEduc_NoChild': 
         Cluster_N.append("26")
-    elif cluster == 'Bronze_Household_Life_Work_1': 
+    elif cluster == 'Bronze_Household_Life_Work_BasicEduc_NoChild': 
         Cluster_N.append("27") 
-    elif cluster == 'Bronze_Health_1': 
+    elif cluster == 'Bronze_Health_BasicEduc_NoChild': 
         Cluster_N.append("28")
-    elif cluster == 'Bronze_Household_Life_Work_5': 
+    elif cluster == 'Bronze_Household_Life_Work_HighEduc_NoChild': 
         Cluster_N.append("29")
-    elif cluster == 'Gold_Motor_0': 
+    elif cluster == 'Gold_Motor_HighEduc_Child': 
         Cluster_N.append("30")
-    elif cluster == 'Silver_Motor_1': 
+    elif cluster == 'Silver_Motor_BasicEduc_NoChild': 
         Cluster_N.append("31")
     else:
         Cluster_N.append("32")
@@ -2294,24 +2317,76 @@ for cluster in df_insurance_final['Clusters']:
 df_insurance_final["Cluster_N"] = Cluster_N       
 
 #df_insurance_final['Cluster_N'].nunique() 
-df_insurance_final.groupby(['Clusters'])['Cust_ID'].count()
+df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
 
 del final_clusters1, final_clusters2, final_clusters, comb, Cluster_N, cluster, clusters_list
-del correlacoes, correlacoes_n
-del results_socio, df_som
+#del correlacoes, correlacoes_n
+#del results_socio, df_som
 
 # =============================================================================
 # REASSIGNMENT OF INDIVIDUALS TO CLUSTERS
 # =============================================================================
 
+list_out = [1,3,4,5,6,7,9,10,12,13,14,16,19,20,22,25,26,27,28,30,31,32]
+
+df_insurance_final.reset_index(drop=True, inplace=True)
+
+df_insurance_final['Cluster_N'] = pd.to_numeric(df_insurance_final['Cluster_N'])
+
+indexNames = df_insurance_final[df_insurance_final['Cluster_N'].isin(list_out)].index
+
+observations_out = df_insurance_final.drop(indexNames).copy()
+
+observations_out.groupby(['Cluster_N'])['Cust_ID'].count()
+
+observations_out.drop(columns=['Clusters', 'Cluster_N'], inplace=True)
+
+df_insurance_final = df_insurance_final.loc[~df_insurance_final['Cluster_N'].isin(list_out), :]
+
 # =============================================================================
 # REINSERTION OF OUTLIERS
 # =============================================================================
 
+from sklearn import datasets
+from sklearn.mixture import GaussianMixture
+from sklearn.model_selection import StratifiedKFold
+
+# Break up the dataset into non-overlapping training (75%) and testing (25%) sets.
+skf = StratifiedKFold(n_splits=4)
+# Only take the first fold.
+train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], df_insurance_final['Cluster_N'])))
+
+X_train = df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])][train_index]
+y_train = df_insurance_final['Cluster_N'][train_index]
+X_test = df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])][test_index]
+y_test = df_insurance_final['Cluster_N'][test_index]
 
 
+n_classes = len(np.unique(y_train))
+
+estimator = GaussianMixture(n_components=n_classes,
+                             max_iter=100, 
+                             random_state=0)
 
 
+# Since we have class labels for the training data, we can
+# initialize the GMM parameters in a supervised manner.
+estimator.means_init = np.array([X_train[y_train == i].mean(axis=0)
+                                for i in range(n_classes)])
+
+# Train the other parameters using the EM algorithm.
+estimator.fit(X_train)
+
+
+y_train_pred = estimator.predict(X_train)
+train_accuracy = np.mean(y_train_pred.ravel() == y_train.ravel()) * 100
+plt.text(0.05, 0.9, 'Train accuracy: %.1f' % train_accuracy)
+
+y_test_pred = estimator.predict(X_test)
+test_accuracy = np.mean(y_test_pred.ravel() == y_test.ravel()) * 100
+plt.text(0.05, 0.8, 'Test accuracy: %.1f' % test_accuracy)
+
+plt.show()
 
 
 
