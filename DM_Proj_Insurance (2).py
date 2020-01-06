@@ -529,15 +529,15 @@ df_insurance = new_variables(df_insurance)
 good_outliers = new_variables(good_outliers)
 week_outliers = new_variables(week_outliers)
 
-#good_outliers['Motor'].fillna(0, inplace = True)
-#good_outliers['Health'].fillna(0, inplace = True)
-#good_outliers['Life'].fillna(0, inplace = True)
-#good_outliers['Work_Compensation'].fillna(0, inplace = True)
-#
-#week_outliers['Motor'].fillna(0, inplace = True)
-#week_outliers['Health'].fillna(0, inplace = True)
-#week_outliers['Life'].fillna(0, inplace = True)
-#good_outliers['Work_Compensation'].fillna(0, inplace = True)
+good_outliers['Motor'].fillna(0, inplace = True)
+good_outliers['Health'].fillna(0, inplace = True)
+good_outliers['Life'].fillna(0, inplace = True)
+good_outliers['Work_Compensation'].fillna(0, inplace = True)
+
+week_outliers['Motor'].fillna(0, inplace = True)
+week_outliers['Health'].fillna(0, inplace = True)
+week_outliers['Life'].fillna(0, inplace = True)
+good_outliers['Work_Compensation'].fillna(0, inplace = True)
 
 
 # =============================================================================
@@ -2255,40 +2255,43 @@ df_insurance_final['Cluster_N'] = df_insurance_final['Clusters'].apply(lambda x:
 df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
 
 del final_clusters1, final_clusters2, final_clusters, comb, clusters_list, dictClusters
-#del correlacoes, correlacoes_n
+del correlacoes, correlacoes_n, descriptive_an
 #del results_socio, df_som
 
 # =============================================================================
-# REASSIGNMENT OF INDIVIDUALS TO CLUSTERS
+# REASSIGNMENT OF INDIVIDUALS TO CLUSTERS & REINSERTION OF OUTLIERS
 # =============================================================================
-
+# count the number of observations per cluster
 count = df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
 
+# get the list of cluster indexes to be reassigned
 list_out = list(count[count<200].index)
 
-
+# get the index observations that are not in the list_out to not include in the dataframe to be reclassified
 indexNames = df_insurance_final[~df_insurance_final['Cluster_N'].isin(list_out)].index
 
 # observations to be reclassified
 observations_out = df_insurance_final.drop(indexNames).copy()
 
-# check the indexes in the observations out
-#observations_out.groupby(['Cluster_N'])['Cust_ID'].count()
-#
-#observations_out.drop(columns=['Clusters', 'Cluster_N'], inplace=True)
-
 
 # final clusters defined
 df_insurance_final = df_insurance_final.loc[~df_insurance_final['Cluster_N'].isin(list_out), :]
-
-
 df_insurance_final.reset_index(drop=True, inplace=True)
 
-#del count, list_out, descriptive_an
+del count, list_out
 
-# ========================
+# ====================================
 # DECISION TREE ALGORITHM
-# ========================
+# ====================================
+
+#observations_out.isna().sum()
+#outliers.isna().sum()
+
+outliers['Motor'].fillna(0, inplace = True)
+outliers['Health'].fillna(0, inplace = True)
+outliers['Life'].fillna(0, inplace = True)
+
+classify = pd.concat([observations_out, outliers], axis=0)
 
 # Break up the dataset into non-overlapping training (75%) and testing (25%) sets.
 skf = StratifiedKFold(n_splits=4)
@@ -2296,28 +2299,33 @@ skf = StratifiedKFold(n_splits=4)
 train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], # data
                                                                      df_insurance_final['Cluster_N'])))  # labels
 
+# variables not included in the train of the model
 variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
                'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
                'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N']
 
+
+# Get the train and test dataset
 X_train = df_insurance_final[df_insurance_final.index.isin(train_index)].drop(columns=variables_out)
 y_train = df_insurance_final[df_insurance_final.index.isin(train_index)]['Cluster_N']
 
 X_test = df_insurance_final[df_insurance_final.index.isin(test_index)].drop(columns=variables_out)
 y_test = df_insurance_final[df_insurance_final.index.isin(test_index)]['Cluster_N']
 
-
+# Train the Decision Tree
 clf = DecisionTreeClassifier(random_state=0,
                              max_depth=8)
 clf.fit(X_train, y_train)
 
-print(dict(zip(X_train.columns, clf.feature_importances_)))
+# get the gini index for each variable
+print(dict(zip(X_train.columns, clf.feature_importances_ )))
 
+# predict the test dataset to get our the performance of the model
 y_pred = clf.predict(X_test)
 
 print('Accuracy: ', metrics.accuracy_score(y_test, y_pred))
 
-
+# get the visual of the decision tree
 os.environ['PATH'] = os.environ['PATH']+';'+os.environ['CONDA_PREFIX']+r"\Library\bin\graphviz"
 dot_data = tree.export_graphviz(clf, out_file=None, 
                                 feature_names=X_train.columns)  
@@ -2326,88 +2334,50 @@ graph = pydotplus.graph_from_dot_data(dot_data)
 Image(graph.create_png())
 graph.write_png('DT.png')
 
+# get performance's metrics
 report = classification_report(y_test, y_pred)
 matrix = confusion_matrix(y_test, y_pred)
 
+
+# variables not included in the train of the model
 variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
                'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
                'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N']
-temp = observations_out.drop(columns=variables_out).copy()
+# temporary dataframe to use to get the labels of the unclassified observations
+temp = classify.drop(columns=variables_out).copy()
 
-# Predict labels for reclassified observations
+
+temp.isna().sum() # there are 3 nulls - Health, Life, Motor
+
+
+# Predict labels for unclassified observations
 y_pred_final = pd.Series(clf.predict(temp))
 
 # Get labels into the final dataset
-observations_out.reset_index(drop=True, inplace=True) 
-observations_out = pd.DataFrame(pd.concat([observations_out, y_pred_final],axis=1))
-observations_out.columns = [*observations_out.columns[:-1], 'Cluster_N_after']
+classify.reset_index(drop=True, inplace=True) 
+classify = pd.DataFrame(pd.concat([classify, y_pred_final],axis=1))
+classify.columns = [*classify.columns[:-1], 'Cluster_N_after']
 
-# =============================================================================
-# REINSERTION OF OUTLIERS
-# =============================================================================
+del X_test,X_train,dot_data,temp,test_index,train_index,y_pred,y_train,variables_out,y_pred_final,y_test
 
-del train_index, test_index, X_train, y_train, clf
-del skf, y_pred, dot_data, variables_out, temp, y_pred_final
+del outliers, observations_out
 
-# Break up the dataset into non-overlapping training (75%) and testing (25%) sets.
-skf = StratifiedKFold(n_splits=4)
-# Only take the first fold.
-train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], # data
-                                                                     df_insurance_final['Cluster_N'])))  # labels
+# FINAL LABELED OUTLIERS
+outliers = classify[1377:].copy()
+outliers.drop(columns=['Clusters','Cluster_N'], inplace=True)
+outliers.rename(columns={"Cluster_N_after": "Cluster_N"}, inplace=True)
 
-variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
-               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
-               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N']
+# FINAL LABELED RECLASSIFIED OBSERVATIONS
+observations_out = classify[:1377].copy()
 
-X_train = df_insurance_final[df_insurance_final.index.isin(train_index)].drop(columns=variables_out)
-y_train = df_insurance_final[df_insurance_final.index.isin(train_index)]['Cluster_N']
-
-X_test = df_insurance_final[df_insurance_final.index.isin(test_index)].drop(columns=variables_out)
-y_test = df_insurance_final[df_insurance_final.index.isin(test_index)]['Cluster_N']
-
-
-clf = DecisionTreeClassifier(random_state=0,
-                             max_depth=8)
-clf.fit(X_train, y_train)
-
-print(dict(zip(X_train.columns, clf.feature_importances_)))
-
-y_pred = clf.predict(X_test)
-
-print('Accuracy: ', metrics.accuracy_score(y_test, y_pred))
-
-
-os.environ['PATH'] = os.environ['PATH']+';'+os.environ['CONDA_PREFIX']+r"\Library\bin\graphviz"
-dot_data = tree.export_graphviz(clf, out_file=None, 
-                                feature_names=X_train.columns)  
-                                #,class_names=iris.target_names)
-graph = pydotplus.graph_from_dot_data(dot_data) 
-Image(graph.create_png())
-graph.write_png('DT.png')
-
-report = classification_report(y_test, y_pred)
-matrix = confusion_matrix(y_test, y_pred)
-
-# Use the prediction set before
-
-variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
-               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
-               'Work_Ratio_sqrt','Work_sqrt','Client_Years']
-temp = outliers.drop(columns=variables_out).copy()
-
-# Predict labels for outliers
-y_pred_final2 = pd.Series(clf.predict(temp))
-
-
-# Get labels into the final dataset
-outliers.reset_index(drop=True, inplace=True) 
-outliers = pd.DataFrame(pd.concat([outliers, y_pred_final],axis=1))
-outliers.columns = [*outliers.columns[:-1], 'Cluster_N']
+# JOIN ALL THE LABELED OBSERVATIONS INTO THE FINAL DATAFRAME
+temp = observations_out.copy()
+temp.drop(columns=['Clusters','Cluster_N'], inplace=True)
+temp.rename(columns={"Cluster_N_after": "Cluster_N"}, inplace=True)
 
 
 
-
-df_insurance_final = pd.concat([df_insurance_final, y_pred_final],axis=1)
+df_insurance_final = pd.concat([df_insurance_final, outliers, temp], axis=0)
 
 
 
