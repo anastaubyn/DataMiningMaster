@@ -6,31 +6,34 @@ import plotly.express as px
 from patsy import dmatrices
 import statsmodels.api as sm
 import seaborn as sb
+import os
 #pip install kmodes
 from kmodes.kprototypes import KPrototypes as KP
+import pydotplus
+from IPython.display import Image
 #Scipy
 import scipy
 from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.cluster import hierarchy
 #Sklearn
 import sklearn
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.cluster import AgglomerativeClustering, KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_samples, silhouette_score
-from sklearn.cluster import DBSCAN
-from sklearn import metrics
+from sklearn import metrics, tree
+from sklearn.metrics import silhouette_samples, silhouette_score, confusion_matrix, classification_report
 from sklearn.decomposition import PCA
+from sklearn.tree import DecisionTreeClassifier, plot_tree, export_graphviz
+from sklearn.externals.six import StringIO 
+from sklearn.model_selection import StratifiedKFold
 # Sompy
 from sompy.sompy import SOMFactory
 from sompy.visualization.plot_tools import plot_hex_map
-import logging
 from sompy.visualization.mapview import View2DPacked
 from sompy.visualization.mapview import View2D
 from sompy.visualization.bmuhits import BmuHitsView
 from pylab import rcParams
+StratifiedKFold
 
 # =============================================================================
 # IMPORT DATABASE
@@ -2243,83 +2246,15 @@ df_insurance_final.dtypes
 df_insurance_final['Clusters']=df_insurance_final['Value']+'_'+df_insurance_final['Product']+'_'+df_insurance_final['SocioDemo']
 df_insurance_final.drop(columns=['Value', 'Product', 'SocioDemo'], inplace=True)
 
+
 clusters_list = df_insurance_final['Clusters'].unique().tolist()
+dictClusters = dict(zip(clusters_list, list(range(1,(len(clusters_list)+1)))))
 
-Cluster_N = [] 
-for cluster in df_insurance_final['Clusters']: 
-    if cluster == 'Silver_Health_HighEduc_Child': 
-        Cluster_N.append("0") 
-    elif cluster == 'Gold_Household_Life_Work_HighEduc_Child': 
-        Cluster_N.append("1")
-    elif cluster == 'Silver_Household_Life_Work_BasicEduc_NoChild': 
-        Cluster_N.append("2")
-    elif cluster == 'Silver_Motor_HighEduc_Child': 
-        Cluster_N.append("3")
-    elif cluster == 'Silver_Health_BasicEduc_Child': 
-        Cluster_N.append("4")
-    elif cluster == 'Gold_Household_Life_Work_HighEduc_NoChild': 
-        Cluster_N.append("5")
-    elif cluster == 'Bronze_Motor_HighEduc_Child': 
-        Cluster_N.append("6")
-    elif cluster == 'Bronze_Health_HighEduc_Child': 
-        Cluster_N.append("7")
-    elif cluster == 'Gold_Health_HighEduc_NoChild': 
-        Cluster_N.append("8")
-    elif cluster == 'Bronze_Health_BasicEduc_Child': 
-        Cluster_N.append("9")
-    elif cluster == 'Silver_Motor_BasicEduc_Child': 
-        Cluster_N.append("10")
-    elif cluster == 'Bronze_Motor_BasicEduc_Child': 
-        Cluster_N.append("11")
-    elif cluster == 'Silver_Household_Life_Work_BasicEduc_Child': 
-        Cluster_N.append("12") 
-    elif cluster == 'Silver_Household_Life_Work_HighEduc_Child': 
-        Cluster_N.append("13")
-    elif cluster == 'Bronze_Household_Life_Work_HighEduc_Child': 
-        Cluster_N.append("14")
-    elif cluster == 'Gold_Health_HighEduc_Child': 
-        Cluster_N.append("15")
-    elif cluster == 'Gold_Health_BasicEduc_Child': 
-        Cluster_N.append("16")
-    elif cluster == 'Silver_Health_HighEduc_NoChild': 
-        Cluster_N.append("17")
-    elif cluster == 'Silver_Health_BasicEduc_NoChild': 
-        Cluster_N.append("18")
-    elif cluster == 'Silver_Household_Life_Work_HighEduc_NoChild': 
-        Cluster_N.append("19")
-    elif cluster == 'Gold_Household_Life_Work_BasicEduc_Child': 
-        Cluster_N.append("20")
-    elif cluster == 'Bronze_Household_Life_Work_BasicEduc_Child': 
-        Cluster_N.append("21")
-    elif cluster == 'Bronze_Health_HighEduc_NoChild': 
-        Cluster_N.append("22")
-    elif cluster == 'Gold_Household_Life_Work_BasicEduc_NoChild': 
-        Cluster_N.append("23")
-    elif cluster == 'Silver_Motor_HighEduc_NoChild': 
-        Cluster_N.append("24")
-    elif cluster == 'Gold_Health_BasicEduc_NoChild': 
-        Cluster_N.append("25")
-    elif cluster == 'Bronze_Motor_HighEduc_NoChild': 
-        Cluster_N.append("26")
-    elif cluster == 'Bronze_Household_Life_Work_BasicEduc_NoChild': 
-        Cluster_N.append("27") 
-    elif cluster == 'Bronze_Health_BasicEduc_NoChild': 
-        Cluster_N.append("28")
-    elif cluster == 'Bronze_Household_Life_Work_HighEduc_NoChild': 
-        Cluster_N.append("29")
-    elif cluster == 'Gold_Motor_HighEduc_Child': 
-        Cluster_N.append("30")
-    elif cluster == 'Silver_Motor_BasicEduc_NoChild': 
-        Cluster_N.append("31")
-    else:
-        Cluster_N.append("32")
-        
-df_insurance_final["Cluster_N"] = Cluster_N       
+df_insurance_final['Cluster_N'] = df_insurance_final['Clusters'].apply(lambda x: dictClusters.get(x))
 
-#df_insurance_final['Cluster_N'].nunique() 
 df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
 
-del final_clusters1, final_clusters2, final_clusters, comb, Cluster_N, cluster, clusters_list
+del final_clusters1, final_clusters2, final_clusters, comb, clusters_list, dictClusters
 #del correlacoes, correlacoes_n
 #del results_socio, df_som
 
@@ -2327,71 +2262,152 @@ del final_clusters1, final_clusters2, final_clusters, comb, Cluster_N, cluster, 
 # REASSIGNMENT OF INDIVIDUALS TO CLUSTERS
 # =============================================================================
 
-list_out = [1,3,4,5,6,7,9,10,12,13,14,16,19,20,22,25,26,27,28,30,31,32]
+count = df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
+
+list_out = list(count[count<200].index)
+
+
+indexNames = df_insurance_final[~df_insurance_final['Cluster_N'].isin(list_out)].index
+
+# observations to be reclassified
+observations_out = df_insurance_final.drop(indexNames).copy()
+
+# check the indexes in the observations out
+#observations_out.groupby(['Cluster_N'])['Cust_ID'].count()
+#
+#observations_out.drop(columns=['Clusters', 'Cluster_N'], inplace=True)
+
+
+# final clusters defined
+df_insurance_final = df_insurance_final.loc[~df_insurance_final['Cluster_N'].isin(list_out), :]
+
 
 df_insurance_final.reset_index(drop=True, inplace=True)
 
-df_insurance_final['Cluster_N'] = pd.to_numeric(df_insurance_final['Cluster_N'])
+#del count, list_out, descriptive_an
 
-indexNames = df_insurance_final[df_insurance_final['Cluster_N'].isin(list_out)].index
+# ========================
+# DECISION TREE ALGORITHM
+# ========================
 
-observations_out = df_insurance_final.drop(indexNames).copy()
+# Break up the dataset into non-overlapping training (75%) and testing (25%) sets.
+skf = StratifiedKFold(n_splits=4)
+# Only take the first fold.
+train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], # data
+                                                                     df_insurance_final['Cluster_N'])))  # labels
 
-observations_out.groupby(['Cluster_N'])['Cust_ID'].count()
+variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
+               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
+               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N']
 
-observations_out.drop(columns=['Clusters', 'Cluster_N'], inplace=True)
+X_train = df_insurance_final[df_insurance_final.index.isin(train_index)].drop(columns=variables_out)
+y_train = df_insurance_final[df_insurance_final.index.isin(train_index)]['Cluster_N']
 
-df_insurance_final = df_insurance_final.loc[~df_insurance_final['Cluster_N'].isin(list_out), :]
+X_test = df_insurance_final[df_insurance_final.index.isin(test_index)].drop(columns=variables_out)
+y_test = df_insurance_final[df_insurance_final.index.isin(test_index)]['Cluster_N']
+
+
+clf = DecisionTreeClassifier(random_state=0,
+                             max_depth=8)
+clf.fit(X_train, y_train)
+
+print(dict(zip(X_train.columns, clf.feature_importances_)))
+
+y_pred = clf.predict(X_test)
+
+print('Accuracy: ', metrics.accuracy_score(y_test, y_pred))
+
+
+os.environ['PATH'] = os.environ['PATH']+';'+os.environ['CONDA_PREFIX']+r"\Library\bin\graphviz"
+dot_data = tree.export_graphviz(clf, out_file=None, 
+                                feature_names=X_train.columns)  
+                                #,class_names=iris.target_names)
+graph = pydotplus.graph_from_dot_data(dot_data) 
+Image(graph.create_png())
+graph.write_png('DT.png')
+
+report = classification_report(y_test, y_pred)
+matrix = confusion_matrix(y_test, y_pred)
+
+variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
+               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
+               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N']
+temp = observations_out.drop(columns=variables_out).copy()
+
+# Predict labels for reclassified observations
+y_pred_final = pd.Series(clf.predict(temp))
+
+# Get labels into the final dataset
+observations_out.reset_index(drop=True, inplace=True) 
+observations_out = pd.DataFrame(pd.concat([observations_out, y_pred_final],axis=1))
+observations_out.columns = [*observations_out.columns[:-1], 'Cluster_N_after']
 
 # =============================================================================
 # REINSERTION OF OUTLIERS
 # =============================================================================
 
-from sklearn import datasets
-from sklearn.mixture import GaussianMixture
-from sklearn.model_selection import StratifiedKFold
+del train_index, test_index, X_train, y_train, clf
+del skf, y_pred, dot_data, variables_out, temp, y_pred_final
 
 # Break up the dataset into non-overlapping training (75%) and testing (25%) sets.
 skf = StratifiedKFold(n_splits=4)
 # Only take the first fold.
-train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], df_insurance_final['Cluster_N'])))
+train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], # data
+                                                                     df_insurance_final['Cluster_N'])))  # labels
 
-X_train = df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])][train_index]
-y_train = df_insurance_final['Cluster_N'][train_index]
-X_test = df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])][test_index]
-y_test = df_insurance_final['Cluster_N'][test_index]
+variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
+               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
+               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N']
 
+X_train = df_insurance_final[df_insurance_final.index.isin(train_index)].drop(columns=variables_out)
+y_train = df_insurance_final[df_insurance_final.index.isin(train_index)]['Cluster_N']
 
-n_classes = len(np.unique(y_train))
-
-estimator = GaussianMixture(n_components=n_classes,
-                             max_iter=100, 
-                             random_state=0)
-
-
-# Since we have class labels for the training data, we can
-# initialize the GMM parameters in a supervised manner.
-estimator.means_init = np.array([X_train[y_train == i].mean(axis=0)
-                                for i in range(n_classes)])
-
-# Train the other parameters using the EM algorithm.
-estimator.fit(X_train)
+X_test = df_insurance_final[df_insurance_final.index.isin(test_index)].drop(columns=variables_out)
+y_test = df_insurance_final[df_insurance_final.index.isin(test_index)]['Cluster_N']
 
 
-y_train_pred = estimator.predict(X_train)
-train_accuracy = np.mean(y_train_pred.ravel() == y_train.ravel()) * 100
-plt.text(0.05, 0.9, 'Train accuracy: %.1f' % train_accuracy)
+clf = DecisionTreeClassifier(random_state=0,
+                             max_depth=8)
+clf.fit(X_train, y_train)
 
-y_test_pred = estimator.predict(X_test)
-test_accuracy = np.mean(y_test_pred.ravel() == y_test.ravel()) * 100
-plt.text(0.05, 0.8, 'Test accuracy: %.1f' % test_accuracy)
+print(dict(zip(X_train.columns, clf.feature_importances_)))
 
-plt.show()
+y_pred = clf.predict(X_test)
 
-
+print('Accuracy: ', metrics.accuracy_score(y_test, y_pred))
 
 
+os.environ['PATH'] = os.environ['PATH']+';'+os.environ['CONDA_PREFIX']+r"\Library\bin\graphviz"
+dot_data = tree.export_graphviz(clf, out_file=None, 
+                                feature_names=X_train.columns)  
+                                #,class_names=iris.target_names)
+graph = pydotplus.graph_from_dot_data(dot_data) 
+Image(graph.create_png())
+graph.write_png('DT.png')
 
+report = classification_report(y_test, y_pred)
+matrix = confusion_matrix(y_test, y_pred)
+
+# Use the prediction set before
+
+variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
+               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
+               'Work_Ratio_sqrt','Work_sqrt','Client_Years']
+temp = outliers.drop(columns=variables_out).copy()
+
+# Predict labels for outliers
+y_pred_final2 = pd.Series(clf.predict(temp))
+
+
+# Get labels into the final dataset
+outliers.reset_index(drop=True, inplace=True) 
+outliers = pd.DataFrame(pd.concat([outliers, y_pred_final],axis=1))
+outliers.columns = [*outliers.columns[:-1], 'Cluster_N']
+
+
+
+
+df_insurance_final = pd.concat([df_insurance_final, y_pred_final],axis=1)
 
 
 
