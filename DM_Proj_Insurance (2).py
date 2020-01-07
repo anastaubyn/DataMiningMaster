@@ -2255,7 +2255,7 @@ df_insurance_final['Cluster_N'] = df_insurance_final['Clusters'].apply(lambda x:
 df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
 
 del final_clusters1, final_clusters2, final_clusters, comb, clusters_list, dictClusters
-del correlacoes, correlacoes_n, descriptive_an
+#del correlacoes, correlacoes_n, descriptive_an
 #del results_socio, df_som
 
 # =============================================================================
@@ -2287,465 +2287,529 @@ del count, list_out
 #observations_out.isna().sum()
 #outliers.isna().sum()
 
-outliers['Motor'].fillna(0, inplace = True)
-outliers['Health'].fillna(0, inplace = True)
-outliers['Life'].fillna(0, inplace = True)
+#outliers['Motor'].fillna(0, inplace = True)
+#outliers['Health'].fillna(0, inplace = True)
+#outliers['Life'].fillna(0, inplace = True)
+#
+#classify = pd.concat([observations_out, outliers], axis=0)
+#
+## Break up the dataset into non-overlapping training (75%) and testing (25%) sets.
+#skf = StratifiedKFold(n_splits=4)
+## Only take the first fold.
+#train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], # data
+#                                                                     df_insurance_final['Cluster_N'])))  # labels
+#
+## variables not included in the train of the model
+#variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
+#               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
+#               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N', 'Claims_Rate']
+#
+#
+## Get the train and test dataset
+#X_train = df_insurance_final[df_insurance_final.index.isin(train_index)].drop(columns=variables_out)
+#y_train = df_insurance_final[df_insurance_final.index.isin(train_index)]['Cluster_N']
+#
+#X_test = df_insurance_final[df_insurance_final.index.isin(test_index)].drop(columns=variables_out)
+#y_test = df_insurance_final[df_insurance_final.index.isin(test_index)]['Cluster_N']
+#
+## Train the Decision Tree
+#clf = DecisionTreeClassifier(random_state=0,
+#                             max_depth=8)
+#clf = clf.fit(X_train, y_train)
+#
+## get the gini index for each variable
+#print(dict(zip(X_train.columns, clf.feature_importances_ )))
+#
+## predict the test dataset to get our the performance of the model
+#y_pred = clf.predict(X_test)
+#
+#print('Accuracy: ', metrics.accuracy_score(y_test, y_pred))
+#
+## get the visual of the decision tree
+#os.environ['PATH'] = os.environ['PATH']+';'+os.environ['CONDA_PREFIX']+r"\Library\bin\graphviz"
+#dot_data = tree.export_graphviz(clf, out_file=None, 
+#                                feature_names=X_train.columns)  
+#                                #,class_names=iris.target_names)
+#graph = pydotplus.graph_from_dot_data(dot_data) 
+#Image(graph.create_png())
+#graph.write_png('DT.png')
+#
+## get performance's metrics
+#report = classification_report(y_test, y_pred)
+#matrix = confusion_matrix(y_test, y_pred)
+#
+#
+## variables not included in the train of the model
+#variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
+#               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
+#               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N', 'Claims_Rate']
+## temporary dataframe to use to get the labels of the unclassified observations
+#temp = classify.drop(columns=variables_out).copy()
+#
+#
+#temp.isna().sum() # there are 3 nulls - Health, Life, Motor
+#
+#
+## Predict labels for unclassified observations
+#y_pred_final = pd.Series(clf.predict(temp))
+#
+## Get labels into the final dataset
+#classify.reset_index(drop=True, inplace=True) 
+#classify = pd.DataFrame(pd.concat([classify, y_pred_final],axis=1))
+#classify.columns = [*classify.columns[:-1], 'Cluster_N_after']
+#
+#del X_test,X_train,dot_data,temp,test_index,train_index,y_pred,y_train,variables_out,y_pred_final,y_test
+#
+##del outliers, observations_out
+#
+## FINAL LABELED OUTLIERS
+#outliers = classify[1377:].copy()
+#outliers.drop(columns=['Clusters','Cluster_N'], inplace=True)
+#outliers.rename(columns={"Cluster_N_after": "Cluster_N"}, inplace=True)
+#
+## FINAL LABELED RECLASSIFIED OBSERVATIONS
+#observations_out = classify[:1377].copy()
+#
+## JOIN ALL THE LABELED OBSERVATIONS INTO THE FINAL DATAFRAME
+#temp = observations_out.copy()
+#temp.drop(columns=['Clusters','Cluster_N'], inplace=True)
+#temp.rename(columns={"Cluster_N_after": "Cluster_N"}, inplace=True)
+#
+#df_insurance_final = pd.concat([df_insurance_final, outliers, temp], axis=0)
 
-classify = pd.concat([observations_out, outliers], axis=0)
+# ====================================
+# KNN ALGORITHM
+# ====================================
 
-# Break up the dataset into non-overlapping training (75%) and testing (25%) sets.
-skf = StratifiedKFold(n_splits=4)
-# Only take the first fold.
-train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], # data
-                                                                     df_insurance_final['Cluster_N'])))  # labels
+#classify = pd.concat([observations_out, outliers], axis=0)
+#
+## Break up the dataset into non-overlapping training (75%) and testing (25%) sets.
+#skf = StratifiedKFold(n_splits=4)
+## Only take the first fold.
+#train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insurance_final.columns.isin(['Clusters','Cluster_N'])], # data
+#                                                                     df_insurance_final['Cluster_N'])))  # labels
+#
+## variables not included in the train of the model
+#variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
+#               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
+#               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N', 'Claims_Rate']
+#
+## Get the train and test dataset
+#X_train = df_insurance_final[df_insurance_final.index.isin(train_index)].drop(columns=variables_out)
+#y_train = df_insurance_final[df_insurance_final.index.isin(train_index)]['Cluster_N']
+#
+#X_test = df_insurance_final[df_insurance_final.index.isin(test_index)].drop(columns=variables_out)
+#y_test = df_insurance_final[df_insurance_final.index.isin(test_index)]['Cluster_N']
+#
+#
+#clf = KNeighborsClassifier(n_neighbors=9, weights='distance', metric='euclidean')
+#
+#clf = clf.fit(X_train, y_train)
+#
+## predict the test dataset to get our the performance of the model
+#y_pred = clf.predict(X_test)
+#
+#print('Accuracy: ', metrics.accuracy_score(y_test, y_pred))
+#
+## get performance's metrics
+#report = classification_report(y_test, y_pred)
+#matrix = confusion_matrix(y_test, y_pred)
+#
+#
+## variables not included in the train of the model
+#variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
+#               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
+#               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N', 'Claims_Rate']
+## temporary dataframe to use to get the labels of the unclassified observations
+#temp = classify.drop(columns=variables_out).copy()
+#
+## Predict labels for unclassified observations
+#y_pred_final = pd.Series(clf.predict(temp))
+#
+## Get labels into the final dataset
+#temp.reset_index(drop=True, inplace=True) 
+#temp = pd.DataFrame(pd.concat([temp, y_pred_final],axis=1))
+#
+#silhouette_score(temp, temp.iloc[:,-1], metric='euclidean')
+#
+#classify.reset_index(drop=True, inplace=True) 
+#classify = pd.DataFrame(pd.concat([classify, y_pred_final],axis=1))
+#classify.columns = [*classify.columns[:-1], 'Cluster_N_after']
+#
+#
+#classify.groupby(['Cluster_N_after'])['Cust_ID'].count()
 
-# variables not included in the train of the model
-variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
-               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
-               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N', 'Claims_Rate']
-
-
-# Get the train and test dataset
-X_train = df_insurance_final[df_insurance_final.index.isin(train_index)].drop(columns=variables_out)
-y_train = df_insurance_final[df_insurance_final.index.isin(train_index)]['Cluster_N']
-
-X_test = df_insurance_final[df_insurance_final.index.isin(test_index)].drop(columns=variables_out)
-y_test = df_insurance_final[df_insurance_final.index.isin(test_index)]['Cluster_N']
-
-# Train the Decision Tree
-clf = DecisionTreeClassifier(random_state=0,
-                             max_depth=8)
-clf.fit(X_train, y_train)
-
-# get the gini index for each variable
-print(dict(zip(X_train.columns, clf.feature_importances_ )))
-
-# predict the test dataset to get our the performance of the model
-y_pred = clf.predict(X_test)
-
-print('Accuracy: ', metrics.accuracy_score(y_test, y_pred))
-
-# get the visual of the decision tree
-os.environ['PATH'] = os.environ['PATH']+';'+os.environ['CONDA_PREFIX']+r"\Library\bin\graphviz"
-dot_data = tree.export_graphviz(clf, out_file=None, 
-                                feature_names=X_train.columns)  
-                                #,class_names=iris.target_names)
-graph = pydotplus.graph_from_dot_data(dot_data) 
-Image(graph.create_png())
-graph.write_png('DT.png')
-
-# get performance's metrics
-report = classification_report(y_test, y_pred)
-matrix = confusion_matrix(y_test, y_pred)
-
-
-# variables not included in the train of the model
-variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
-               'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
-               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N', 'Claims_Rate']
-# temporary dataframe to use to get the labels of the unclassified observations
-temp = classify.drop(columns=variables_out).copy()
-
-
-temp.isna().sum() # there are 3 nulls - Health, Life, Motor
-
-
-# Predict labels for unclassified observations
-y_pred_final = pd.Series(clf.predict(temp))
-
-# Get labels into the final dataset
-classify.reset_index(drop=True, inplace=True) 
-classify = pd.DataFrame(pd.concat([classify, y_pred_final],axis=1))
-classify.columns = [*classify.columns[:-1], 'Cluster_N_after']
-
-del X_test,X_train,dot_data,temp,test_index,train_index,y_pred,y_train,variables_out,y_pred_final,y_test
-
-#del outliers, observations_out
-
-# FINAL LABELED OUTLIERS
-outliers = classify[1377:].copy()
-outliers.drop(columns=['Clusters','Cluster_N'], inplace=True)
-outliers.rename(columns={"Cluster_N_after": "Cluster_N"}, inplace=True)
-
-# FINAL LABELED RECLASSIFIED OBSERVATIONS
-observations_out = classify[:1377].copy()
-
-# JOIN ALL THE LABELED OBSERVATIONS INTO THE FINAL DATAFRAME
-temp = observations_out.copy()
-temp.drop(columns=['Clusters','Cluster_N'], inplace=True)
-temp.rename(columns={"Cluster_N_after": "Cluster_N"}, inplace=True)
-
-df_insurance_final = pd.concat([df_insurance_final, outliers, temp], axis=0)
-
-# =============================================================================
-# VISUALIZATIONS PER CLUSTERS
-# =============================================================================
-
-# Count observations per cluster Outliers
-outliers.groupby(['Cluster_N'])['Cust_ID'].count()
-df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
-
-observations_out.groupby(['Cluster_N', 'Cluster_N_after'])['Cust_ID'].aggregate('count').unstack()
-# =============================================================================
-# PROFILLING OF THE FINAL CLUSTERS
-# =============================================================================
-
-
-fig, axs = plt.subplots(nrows=11, ncols=12, figsize=(44,44))
-
-# cluster 1
-axs[0, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==1], color='darkseagreen',range=[1,4])
-axs[0, 0].set_title('Education for Cluster 1')
-plt.sca(axs[0, 0])
-plt.xticks([1, 2, 3, 4])
-axs[0, 1].hist(results_socio['Children'].loc[results_socio['Cluster_N']==1], color='cadetblue',range=[0,1])
-axs[0, 1].set_title('Children for Cluster 1')
-plt.sca(axs[0, 1])
-plt.xticks([0,1])
-axs[0, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==1], color='tan')
-axs[0, 2].set_title('Yearly_Salary for Cluster 1')
-axs[0, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==1], color='rosybrown')
-axs[0, 3].set_title('CMV for Cluster 1')
-axs[0, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==1], color='dimgrey')
-axs[0, 4].set_title('Effort_Rate for Cluster 1')
-axs[0, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==1], color='darkseagreen')
-axs[0, 5].set_title('Total_Premiums for Cluster 1')
-axs[0, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==1], color='cadetblue', range=[0,1])
-axs[0, 6].set_title('Cancelled for Cluster 1')
-plt.sca(axs[0, 6])
-plt.xticks([0, 1])
-axs[0, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==1], color='tan')
-axs[0, 7].set_title('Household for Cluster 1')
-axs[0, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==1], color='rosybrown')
-axs[0, 8].set_title('Life for Cluster 1')
-axs[0, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==1], color='dimgrey')
-axs[0, 9].set_title('Health for Cluster 1')
-axs[0, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==1], color='darkseagreen')
-axs[0, 10].set_title('Work_Compensation for Cluster 1')
-axs[0, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==1], color='cadetblue')
-axs[0, 11].set_title('Motor for Cluster 1')
-
-# cluster 2
-axs[1, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==2], color='darkseagreen',range=[1,4])
-axs[1, 0].set_title('Education for Cluster 2')
-plt.sca(axs[1, 0])
-plt.xticks([1, 2, 3, 4])
-axs[1, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==2], color='cadetblue',range=[0,1])
-axs[1, 1].set_title('Children for Cluster 2')
-plt.sca(axs[1, 1])
-plt.xticks([0,1])
-axs[1, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==2], color='tan')
-axs[1, 2].set_title('Yearly_Salary for Cluster 2')
-axs[1, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==2], color='rosybrown')
-axs[1, 3].set_title('CMV for Cluster 2')
-axs[1, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==2], color='dimgrey')
-axs[1, 4].set_title('Effort_Rate for Cluster 2')
-axs[1, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==2], color='darkseagreen')
-axs[1, 5].set_title('Total_Premiums for Cluster 2')
-axs[1, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==2], color='cadetblue', range=[0,1])
-axs[1, 6].set_title('Cancelled for Cluster 2')
-plt.sca(axs[1, 6])
-plt.xticks([0, 1])
-axs[1, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==2], color='tan')
-axs[1, 7].set_title('Household for Cluster 2')
-axs[1, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==2], color='rosybrown')
-axs[1, 8].set_title('Life for Cluster 2')
-axs[1, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==2], color='dimgrey')
-axs[1, 9].set_title('Health for Cluster 2')
-axs[1, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==2], color='darkseagreen')
-axs[1, 10].set_title('Work_Compensation for Cluster 2')
-axs[1, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==2], color='cadetblue')
-axs[1, 11].set_title('Motor for Cluster 2')
-
-# cluster 4
-axs[2, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==4], color='darkseagreen',range=[1,4])
-axs[2, 0].set_title('Education for Cluster 4')
-plt.sca(axs[2, 0])
-plt.xticks([1, 2, 3, 4])
-axs[2, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==4], color='cadetblue',range=[0,1])
-axs[2, 1].set_title('Children for Cluster 4')
-plt.sca(axs[2, 1])
-plt.xticks([0,1])
-axs[2, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==4], color='tan')
-axs[2, 2].set_title('Yearly_Salary for Cluster 4')
-axs[2, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==4], color='rosybrown')
-axs[2, 3].set_title('CMV for Cluster 4')
-axs[2, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==4], color='dimgrey')
-axs[2, 4].set_title('Effort_Rate for Cluster 4')
-axs[2, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==4], color='darkseagreen')
-axs[2, 5].set_title('Total_Premiums for Cluster 4')
-axs[2, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==4], color='cadetblue', range=[0,1])
-axs[2, 6].set_title('Cancelled for Cluster 4')
-plt.sca(axs[2, 6])
-plt.xticks([0, 1])
-axs[2, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==4], color='tan')
-axs[2, 7].set_title('Household for Cluster 4')
-axs[2, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==4], color='rosybrown')
-axs[2, 8].set_title('Life for Cluster 4')
-axs[2, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==4], color='dimgrey')
-axs[2, 9].set_title('Health for Cluster 4')
-axs[2, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==4], color='darkseagreen')
-axs[2, 10].set_title('Work_Compensation for Cluster 4')
-axs[2, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==4], color='cadetblue')
-axs[2, 11].set_title('Motor for Cluster 4')
-
-# cluster 5
-axs[3, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==5], color='darkseagreen',range=[1,4])
-axs[3, 0].set_title('Education for Cluster 5')
-plt.sca(axs[3, 0])
-plt.xticks([1, 2, 3, 4])
-axs[3, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==5], color='cadetblue',range=[0,1])
-axs[3, 1].set_title('Children for Cluster 5')
-plt.sca(axs[3, 1])
-plt.xticks([0,1])
-axs[3, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==5], color='tan')
-axs[3, 2].set_title('Yearly_Salary for Cluster 5')
-axs[3, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==5], color='rosybrown')
-axs[3, 3].set_title('CMV for Cluster 5')
-axs[3, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==5], color='dimgrey')
-axs[3, 4].set_title('Effort_Rate for Cluster 5')
-axs[3, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==5], color='darkseagreen')
-axs[3, 5].set_title('Total_Premiums for Cluster 5')
-axs[3, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==5], color='cadetblue', range=[0,1])
-axs[3, 6].set_title('Cancelled for Cluster 5')
-plt.sca(axs[3, 6])
-plt.xticks([0, 1])
-axs[3, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==5], color='tan')
-axs[3, 7].set_title('Household for Cluster 5')
-axs[3, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==5], color='rosybrown')
-axs[3, 8].set_title('Life for Cluster 5')
-axs[3, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==5], color='dimgrey')
-axs[3, 9].set_title('Health for Cluster 5')
-axs[3, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==5], color='darkseagreen')
-axs[3, 10].set_title('Work_Compensation for Cluster 5')
-axs[3, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==5], color='cadetblue')
-axs[3, 11].set_title('Motor for Cluster 5')
-
-#cluster 6
-axs[4, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==6], color='darkseagreen',range=[1,4])
-axs[4, 0].set_title('Education for Cluster 6')
-plt.sca(axs[4, 0])
-plt.xticks([1, 2, 3, 4])
-axs[4, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==6], color='cadetblue',range=[0,1])
-axs[4, 1].set_title('Children for Cluster 6')
-plt.sca(axs[4, 1])
-plt.xticks([0,1])
-axs[4, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==6], color='tan')
-axs[4, 2].set_title('Yearly_Salary for Cluster 6')
-axs[4, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==6], color='rosybrown')
-axs[4, 3].set_title('CMV for Cluster 6')
-axs[4, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==6], color='dimgrey')
-axs[4, 4].set_title('Effort_Rate for Cluster 6')
-axs[4, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==6], color='darkseagreen')
-axs[4, 5].set_title('Total_Premiums for Cluster 6')
-axs[4, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==6], color='cadetblue', range=[0,1])
-axs[4, 6].set_title('Cancelled for Cluster 6')
-plt.sca(axs[4, 6])
-plt.xticks([0, 1])
-axs[4, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==6], color='tan')
-axs[4, 7].set_title('Household for Cluster 6')
-axs[4, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==6], color='rosybrown')
-axs[4, 8].set_title('Life for Cluster 6')
-axs[4, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==6], color='dimgrey')
-axs[4, 9].set_title('Health for Cluster 6')
-axs[4, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==6], color='darkseagreen')
-axs[4, 10].set_title('Work_Compensation for Cluster 6')
-axs[4, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==6], color='cadetblue')
-axs[4, 11].set_title('Motor for Cluster 6')
-
-#cluster 7
-axs[5, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==7], color='darkseagreen',range=[1,4])
-axs[5, 0].set_title('Education for Cluster 7')
-plt.sca(axs[5, 0])
-plt.xticks([1, 2, 3, 4])
-axs[5, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==7], color='cadetblue',range=[0,1])
-axs[5, 1].set_title('Children for Cluster 7')
-plt.sca(axs[5, 1])
-plt.xticks([0,1])
-axs[5, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==7], color='tan')
-axs[5, 2].set_title('Yearly_Salary for Cluster 7')
-axs[5, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==7], color='rosybrown')
-axs[5, 3].set_title('CMV for Cluster 7')
-axs[5, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==7], color='dimgrey')
-axs[5, 4].set_title('Effort_Rate for Cluster 7')
-axs[5, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==7], color='darkseagreen')
-axs[5, 5].set_title('Total_Premiums for Cluster 7')
-axs[5, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==7], color='cadetblue', range=[0,1])
-axs[5, 6].set_title('Cancelled for Cluster 7')
-plt.sca(axs[5, 6])
-plt.xticks([0, 1])
-axs[5, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==7], color='tan')
-axs[5, 7].set_title('Household for Cluster 7')
-axs[5, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==7], color='rosybrown')
-axs[5, 8].set_title('Life for Cluster 7')
-axs[5, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==7], color='dimgrey')
-axs[5, 9].set_title('Health for Cluster 7')
-axs[5, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==7], color='darkseagreen')
-axs[5, 10].set_title('Work_Compensation for Cluster 7')
-axs[5, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==7], color='cadetblue')
-axs[5, 11].set_title('Motor for Cluster 7')
-
-#cluster 8
-axs[6, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==8], color='darkseagreen',range=[1,4])
-axs[6, 0].set_title('Education for Cluster 8')
-plt.sca(axs[6, 0])
-plt.xticks([1, 2, 3, 4])
-axs[6, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==8], color='cadetblue',range=[0,1])
-axs[6, 1].set_title('Children for Cluster 8')
-plt.sca(axs[6, 1])
-plt.xticks([0,1])
-axs[6, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==8], color='tan')
-axs[6, 2].set_title('Yearly_Salary for Cluster 8')
-axs[6, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==8], color='rosybrown')
-axs[6, 3].set_title('CMV for Cluster 8')
-axs[6, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==8], color='dimgrey')
-axs[6, 4].set_title('Effort_Rate for Cluster 8')
-axs[6, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==8], color='darkseagreen')
-axs[6, 5].set_title('Total_Premiums for Cluster 8')
-axs[6, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==8], color='cadetblue', range=[0,1])
-axs[6, 6].set_title('Cancelled for Cluster 8')
-plt.sca(axs[6, 6])
-plt.xticks([0, 1])
-axs[6, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==8], color='tan')
-axs[6, 7].set_title('Household for Cluster 8')
-axs[6, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==8], color='rosybrown')
-axs[6, 8].set_title('Life for Cluster 8')
-axs[6, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==8], color='dimgrey')
-axs[6, 9].set_title('Health for Cluster 8')
-axs[6, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==8], color='darkseagreen')
-axs[6, 10].set_title('Work_Compensation for Cluster 8')
-axs[6, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==8], color='cadetblue')
-axs[6, 11].set_title('Motor for Cluster 8')
-
-#cluster 10
-axs[7, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==10], color='darkseagreen',range=[1,4])
-axs[7, 0].set_title('Education for Cluster 10')
-plt.sca(axs[7, 0])
-plt.xticks([1, 2, 3, 4])
-axs[7, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==10], color='cadetblue',range=[0,1])
-axs[7, 1].set_title('Children for Cluster 10')
-plt.sca(axs[7, 1])
-plt.xticks([0,1])
-axs[7, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==10], color='tan')
-axs[7, 2].set_title('Yearly_Salary for Cluster 10')
-axs[7, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==10], color='rosybrown')
-axs[7, 3].set_title('CMV for Cluster 10')
-axs[7, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==10], color='dimgrey')
-axs[7, 4].set_title('Effort_Rate for Cluster 10')
-axs[7, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==10], color='darkseagreen')
-axs[7, 5].set_title('Total_Premiums for Cluster 10')
-axs[7, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==10], color='cadetblue', range=[0,1])
-axs[7, 6].set_title('Cancelled for Cluster 10')
-plt.sca(axs[7, 6])
-plt.xticks([0, 1])
-axs[7, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==10], color='tan')
-axs[7, 7].set_title('Household for Cluster 10')
-axs[7, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==10], color='rosybrown')
-axs[7, 8].set_title('Life for Cluster 10')
-axs[7, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==10], color='dimgrey')
-axs[7, 9].set_title('Health for Cluster 10')
-axs[7, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==10], color='darkseagreen')
-axs[7, 10].set_title('Work_Compensation for Cluster 10')
-axs[7, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==10], color='cadetblue')
-axs[7, 11].set_title('Motor for Cluster 10')
-
-#cluster 16
-axs[8, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==16], color='darkseagreen',range=[1,4])
-axs[8, 0].set_title('Education for Cluster 16')
-plt.sca(axs[8, 0])
-plt.xticks([1, 2, 3, 4])
-axs[8, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==16], color='cadetblue',range=[0,1])
-axs[8, 1].set_title('Children for Cluster 16')
-plt.sca(axs[8, 1])
-plt.xticks([0,1])
-axs[8, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==16], color='tan')
-axs[8, 2].set_title('Yearly_Salary for Cluster 16')
-axs[8, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==16], color='rosybrown')
-axs[8, 3].set_title('CMV for Cluster 16')
-axs[8, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==16], color='dimgrey')
-axs[8, 4].set_title('Effort_Rate for Cluster 16')
-axs[8, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==16], color='darkseagreen')
-axs[8, 5].set_title('Total_Premiums for Cluster 16')
-axs[8, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==16], color='cadetblue', range=[0,1])
-axs[8, 6].set_title('Cancelled for Cluster 16')
-plt.sca(axs[8, 6])
-plt.xticks([0, 1])
-axs[8, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==16], color='tan')
-axs[8, 7].set_title('Household for Cluster 16')
-axs[8, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==16], color='rosybrown')
-axs[8, 8].set_title('Life for Cluster 16')
-axs[8, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==16], color='dimgrey')
-axs[8, 9].set_title('Health for Cluster 16')
-axs[8, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==16], color='darkseagreen')
-axs[8, 10].set_title('Work_Compensation for Cluster 16')
-axs[8, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==16], color='cadetblue')
-axs[8, 11].set_title('Motor for Cluster 16')
-
-#cluster 18
-axs[9, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==18], color='darkseagreen',range=[1,4])
-axs[9, 0].set_title('Education for Cluster 18')
-plt.sca(axs[9, 0])
-plt.xticks([1, 2, 3, 4])
-axs[9, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==18], color='cadetblue',range=[0,1])
-axs[9, 1].set_title('Children for Cluster 18')
-plt.sca(axs[9, 1])
-plt.xticks([0,1])
-axs[9, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==18], color='tan')
-axs[9, 2].set_title('Yearly_Salary for Cluster 18')
-axs[9, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==18], color='rosybrown')
-axs[9, 3].set_title('CMV for Cluster 18')
-axs[9, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==18], color='dimgrey')
-axs[9, 4].set_title('Effort_Rate for Cluster 18')
-axs[9, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==18], color='darkseagreen')
-axs[9, 5].set_title('Total_Premiums for Cluster 18')
-axs[9, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==18], color='cadetblue', range=[0,1])
-axs[9, 6].set_title('Cancelled for Cluster 18')
-plt.sca(axs[9, 6])
-plt.xticks([0, 1])
-axs[9, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==18], color='tan')
-axs[9, 7].set_title('Household for Cluster 18')
-axs[9, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==18], color='rosybrown')
-axs[9, 8].set_title('Life for Cluster 18')
-axs[9, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==18], color='dimgrey')
-axs[9, 9].set_title('Health for Cluster 18')
-axs[9, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==18], color='darkseagreen')
-axs[9, 10].set_title('Work_Compensation for Cluster 18')
-axs[9, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==18], color='cadetblue')
-axs[9, 11].set_title('Motor for Cluster 18')
-
-#cluster 21
-axs[10, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==21], color='darkseagreen',range=[1,4])
-axs[10, 0].set_title('Education for Cluster 21')
-plt.sca(axs[10, 0])
-plt.xticks([1, 2, 3, 4])
-axs[10, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==21], color='cadetblue',range=[0,1])
-axs[10, 1].set_title('Children for Cluster 21')
-plt.sca(axs[10, 1])
-plt.xticks([0,1])
-axs[10, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==21], color='tan')
-axs[10, 2].set_title('Yearly_Salary for Cluster 21')
-axs[10, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==21], color='rosybrown')
-axs[10, 3].set_title('CMV for Cluster 21')
-axs[10, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==21], color='dimgrey')
-axs[10, 4].set_title('Effort_Rate for Cluster 21')
-axs[10, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==21], color='darkseagreen')
-axs[10, 5].set_title('Total_Premiums for Cluster 21')
-axs[10, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==21], color='cadetblue', range=[0,1])
-axs[10, 6].set_title('Cancelled for Cluster 21')
-plt.sca(axs[10, 6])
-plt.xticks([0, 1])
-axs[10, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==21], color='tan')
-axs[10, 7].set_title('Household for Cluster 21')
-axs[10, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==21], color='rosybrown')
-axs[10, 8].set_title('Life for Cluster 21')
-axs[10, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==21], color='dimgrey')
-axs[10, 9].set_title('Health for Cluster 21')
-axs[10, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==21], color='darkseagreen')
-axs[10, 10].set_title('Work_Compensation for Cluster 21')
-axs[10, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==21], color='cadetblue')
-axs[10, 11].set_title('Motor for Cluster 21')
-
-plt.show()
+#
+## =============================================================================
+## VISUALIZATIONS PER CLUSTERS
+## =============================================================================
+#
+## Count observations per cluster Outliers
+#outliers.groupby(['Cluster_N'])['Cust_ID'].count()
+#df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
+#
+#observations_out.groupby(['Cluster_N', 'Cluster_N_after'])['Cust_ID'].aggregate('count').unstack()
+#
+#
+## =============================================================================
+## PROFILLING OF THE FINAL CLUSTERS
+## =============================================================================
+#
+#fig, axs = plt.subplots(nrows=11, ncols=12, figsize=(44,44))
+#
+## cluster 1
+#axs[0, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==1], color='darkseagreen',range=[1,4])
+#axs[0, 0].set_title('Education for Cluster 1')
+#plt.sca(axs[0, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[0, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==1], color='cadetblue',range=[0,1])
+#axs[0, 1].set_title('Children for Cluster 1')
+#plt.sca(axs[0, 1])
+#plt.xticks([0,1])
+#axs[0, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==1], color='tan',range=[0,50000])
+#axs[0, 2].set_title('Yearly_Salary for Cluster 1')
+#axs[0, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==1], color='rosybrown',range=[-250,1000])
+#axs[0, 3].set_title('CMV for Cluster 1')
+#axs[0, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==1], color='dimgrey',range=[0,0.2])
+#axs[0, 4].set_title('Effort_Rate for Cluster 1')
+#axs[0, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==1], color='darkseagreen',range=[400,1500])
+#axs[0, 5].set_title('Total_Premiums for Cluster 1')
+#axs[0, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==1], color='cadetblue', range=[0,1])
+#axs[0, 6].set_title('Cancelled for Cluster 1')
+#plt.sca(axs[0, 6])
+#plt.xticks([0, 1])
+#axs[0, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==1], color='tan',range=[0,1000])
+#axs[0, 7].set_title('Household for Cluster 1')
+#axs[0, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==1], color='rosybrown',range=[0,300])
+#axs[0, 8].set_title('Life for Cluster 1')
+#axs[0, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==1], color='dimgrey',range=[0,400])
+#axs[0, 9].set_title('Health for Cluster 1')
+#axs[0, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==1], color='darkseagreen',range=[0,300])
+#axs[0, 10].set_title('Work_Compensation for Cluster 1')
+#axs[0, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==1], color='cadetblue',range=[0,500])
+#axs[0, 11].set_title('Motor for Cluster 1')
+#
+## cluster 2
+#axs[1, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==2], color='darkseagreen',range=[1,4])
+#axs[1, 0].set_title('Education for Cluster 2')
+#plt.sca(axs[1, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[1, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==2], color='cadetblue',range=[0,1])
+#axs[1, 1].set_title('Children for Cluster 2')
+#plt.sca(axs[1, 1])
+#plt.xticks([0,1])
+#axs[1, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==2], color='tan',range=[0,50000])
+#axs[1, 2].set_title('Yearly_Salary for Cluster 2')
+#axs[1, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==2], color='rosybrown',range=[-250,1000])
+#axs[1, 3].set_title('CMV for Cluster 2')
+#axs[1, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==2], color='dimgrey',range=[0,0.2])
+#axs[1, 4].set_title('Effort_Rate for Cluster 2')
+#axs[1, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==2], color='darkseagreen',range=[400,1500])
+#axs[1, 5].set_title('Total_Premiums for Cluster 2')
+#axs[1, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==2], color='cadetblue', range=[0,1])
+#axs[1, 6].set_title('Cancelled for Cluster 2')
+#plt.sca(axs[1, 6])
+#plt.xticks([0, 1])
+#axs[1, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==2], color='tan',range=[0,1000])
+#axs[1, 7].set_title('Household for Cluster 2')
+#axs[1, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==2], color='rosybrown',range=[0,300])
+#axs[1, 8].set_title('Life for Cluster 2')
+#axs[1, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==2], color='dimgrey',range=[0,400])
+#axs[1, 9].set_title('Health for Cluster 2')
+#axs[1, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==2], color='darkseagreen',range=[0,300])
+#axs[1, 10].set_title('Work_Compensation for Cluster 2')
+#axs[1, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==2], color='cadetblue',range=[0,500])
+#axs[1, 11].set_title('Motor for Cluster 2')
+#
+## cluster 4
+#axs[2, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==4], color='darkseagreen',range=[1,4])
+#axs[2, 0].set_title('Education for Cluster 4')
+#plt.sca(axs[2, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[2, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==4], color='cadetblue',range=[0,1])
+#axs[2, 1].set_title('Children for Cluster 4')
+#plt.sca(axs[2, 1])
+#plt.xticks([0,1])
+#axs[2, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==4], color='tan',range=[0,50000])
+#axs[2, 2].set_title('Yearly_Salary for Cluster 4')
+#axs[2, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==4], color='rosybrown',range=[-250,1000])
+#axs[2, 3].set_title('CMV for Cluster 4')
+#axs[2, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==4], color='dimgrey',range=[0,0.2])
+#axs[2, 4].set_title('Effort_Rate for Cluster 4')
+#axs[2, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==4], color='darkseagreen',range=[400,1500])
+#axs[2, 5].set_title('Total_Premiums for Cluster 4')
+#axs[2, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==4], color='cadetblue', range=[0,1])
+#axs[2, 6].set_title('Cancelled for Cluster 4')
+#plt.sca(axs[2, 6])
+#plt.xticks([0, 1])
+#axs[2, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==4], color='tan',range=[0,1000])
+#axs[2, 7].set_title('Household for Cluster 4')
+#axs[2, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==4], color='rosybrown',range=[0,300])
+#axs[2, 8].set_title('Life for Cluster 4')
+#axs[2, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==4], color='dimgrey',range=[0,400])
+#axs[2, 9].set_title('Health for Cluster 4')
+#axs[2, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==4], color='darkseagreen',range=[0,300])
+#axs[2, 10].set_title('Work_Compensation for Cluster 4')
+#axs[2, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==4], color='cadetblue',range=[0,500])
+#axs[2, 11].set_title('Motor for Cluster 4')
+#
+## cluster 5
+#axs[3, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==5], color='darkseagreen',range=[1,4])
+#axs[3, 0].set_title('Education for Cluster 5')
+#plt.sca(axs[3, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[3, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==5], color='cadetblue',range=[0,1])
+#axs[3, 1].set_title('Children for Cluster 5')
+#plt.sca(axs[3, 1])
+#plt.xticks([0,1])
+#axs[3, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==5], color='tan',range=[0,50000])
+#axs[3, 2].set_title('Yearly_Salary for Cluster 5')
+#axs[3, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==5], color='rosybrown',range=[-250,1000])
+#axs[3, 3].set_title('CMV for Cluster 5')
+#axs[3, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==5], color='dimgrey',range=[0,0.2])
+#axs[3, 4].set_title('Effort_Rate for Cluster 5')
+#axs[3, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==5], color='darkseagreen',range=[400,1500])
+#axs[3, 5].set_title('Total_Premiums for Cluster 5')
+#axs[3, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==5], color='cadetblue', range=[0,1])
+#axs[3, 6].set_title('Cancelled for Cluster 5')
+#plt.sca(axs[3, 6])
+#plt.xticks([0, 1])
+#axs[3, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==5], color='tan',range=[0,1000])
+#axs[3, 7].set_title('Household for Cluster 5')
+#axs[3, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==5], color='rosybrown',range=[0,300])
+#axs[3, 8].set_title('Life for Cluster 5')
+#axs[3, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==5], color='dimgrey',range=[0,400])
+#axs[3, 9].set_title('Health for Cluster 5')
+#axs[3, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==5], color='darkseagreen',range=[0,300])
+#axs[3, 10].set_title('Work_Compensation for Cluster 5')
+#axs[3, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==5], color='cadetblue',range=[0,500])
+#axs[3, 11].set_title('Motor for Cluster 5')
+#
+##cluster 6
+#axs[4, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==6], color='darkseagreen',range=[1,4])
+#axs[4, 0].set_title('Education for Cluster 6')
+#plt.sca(axs[4, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[4, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==6], color='cadetblue',range=[0,1])
+#axs[4, 1].set_title('Children for Cluster 6')
+#plt.sca(axs[4, 1])
+#plt.xticks([0,1])
+#axs[4, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==6], color='tan',range=[0,50000])
+#axs[4, 2].set_title('Yearly_Salary for Cluster 6')
+#axs[4, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==6], color='rosybrown',range=[-250,1000])
+#axs[4, 3].set_title('CMV for Cluster 6')
+#axs[4, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==6], color='dimgrey',range=[0,0.2])
+#axs[4, 4].set_title('Effort_Rate for Cluster 6')
+#axs[4, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==6], color='darkseagreen',range=[400,1500])
+#axs[4, 5].set_title('Total_Premiums for Cluster 6')
+#axs[4, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==6], color='cadetblue', range=[0,1])
+#axs[4, 6].set_title('Cancelled for Cluster 6')
+#plt.sca(axs[4, 6])
+#plt.xticks([0, 1])
+#axs[4, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==6], color='tan',range=[0,1000])
+#axs[4, 7].set_title('Household for Cluster 6')
+#axs[4, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==6], color='rosybrown',range=[0,300])
+#axs[4, 8].set_title('Life for Cluster 6')
+#axs[4, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==6], color='dimgrey',range=[0,400])
+#axs[4, 9].set_title('Health for Cluster 6')
+#axs[4, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==6], color='darkseagreen',range=[0,300])
+#axs[4, 10].set_title('Work_Compensation for Cluster 6')
+#axs[4, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==6], color='cadetblue',range=[0,500])
+#axs[4, 11].set_title('Motor for Cluster 6')
+#
+##cluster 7
+#axs[5, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==7], color='darkseagreen',range=[1,4])
+#axs[5, 0].set_title('Education for Cluster 7')
+#plt.sca(axs[5, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[5, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==7], color='cadetblue',range=[0,1])
+#axs[5, 1].set_title('Children for Cluster 7')
+#plt.sca(axs[5, 1])
+#plt.xticks([0,1])
+#axs[5, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==7], color='tan',range=[0,50000])
+#axs[5, 2].set_title('Yearly_Salary for Cluster 7')
+#axs[5, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==7], color='rosybrown',range=[-250,1000])
+#axs[5, 3].set_title('CMV for Cluster 7')
+#axs[5, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==7], color='dimgrey',range=[0,0.2])
+#axs[5, 4].set_title('Effort_Rate for Cluster 7')
+#axs[5, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==7], color='darkseagreen',range=[400,1500])
+#axs[5, 5].set_title('Total_Premiums for Cluster 7')
+#axs[5, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==7], color='cadetblue', range=[0,1])
+#axs[5, 6].set_title('Cancelled for Cluster 7')
+#plt.sca(axs[5, 6])
+#plt.xticks([0, 1])
+#axs[5, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==7], color='tan',range=[0,1000])
+#axs[5, 7].set_title('Household for Cluster 7')
+#axs[5, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==7], color='rosybrown',range=[0,300])
+#axs[5, 8].set_title('Life for Cluster 7')
+#axs[5, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==7], color='dimgrey',range=[0,400])
+#axs[5, 9].set_title('Health for Cluster 7')
+#axs[5, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==7], color='darkseagreen',range=[0,300])
+#axs[5, 10].set_title('Work_Compensation for Cluster 7')
+#axs[5, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==7], color='cadetblue',range=[0,500])
+#axs[5, 11].set_title('Motor for Cluster 7')
+#
+##cluster 8
+#axs[6, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==8], color='darkseagreen',range=[1,4])
+#axs[6, 0].set_title('Education for Cluster 8')
+#plt.sca(axs[6, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[6, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==8], color='cadetblue',range=[0,1])
+#axs[6, 1].set_title('Children for Cluster 8')
+#plt.sca(axs[6, 1])
+#plt.xticks([0,1])
+#axs[6, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==8], color='tan',range=[0,50000])
+#axs[6, 2].set_title('Yearly_Salary for Cluster 8')
+#axs[6, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==8], color='rosybrown',range=[-250,1000])
+#axs[6, 3].set_title('CMV for Cluster 8')
+#axs[6, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==8], color='dimgrey',range=[0,0.2])
+#axs[6, 4].set_title('Effort_Rate for Cluster 8')
+#axs[6, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==8], color='darkseagreen',range=[400,1500])
+#axs[6, 5].set_title('Total_Premiums for Cluster 8')
+#axs[6, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==8], color='cadetblue', range=[0,1])
+#axs[6, 6].set_title('Cancelled for Cluster 8')
+#plt.sca(axs[6, 6])
+#plt.xticks([0, 1])
+#axs[6, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==8], color='tan',range=[0,1000])
+#axs[6, 7].set_title('Household for Cluster 8')
+#axs[6, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==8], color='rosybrown',range=[0,300])
+#axs[6, 8].set_title('Life for Cluster 8')
+#axs[6, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==8], color='dimgrey',range=[0,400])
+#axs[6, 9].set_title('Health for Cluster 8')
+#axs[6, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==8], color='darkseagreen',range=[0,300])
+#axs[6, 10].set_title('Work_Compensation for Cluster 8')
+#axs[6, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==8], color='cadetblue',range=[0,500])
+#axs[6, 11].set_title('Motor for Cluster 8')
+#
+##cluster 10
+#axs[7, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==10], color='darkseagreen',range=[1,4])
+#axs[7, 0].set_title('Education for Cluster 10')
+#plt.sca(axs[7, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[7, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==10], color='cadetblue',range=[0,1])
+#axs[7, 1].set_title('Children for Cluster 10')
+#plt.sca(axs[7, 1])
+#plt.xticks([0,1])
+#axs[7, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==10], color='tan',range=[0,50000])
+#axs[7, 2].set_title('Yearly_Salary for Cluster 10')
+#axs[7, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==10], color='rosybrown',range=[-250,1000])
+#axs[7, 3].set_title('CMV for Cluster 10')
+#axs[7, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==10], color='dimgrey',range=[0,0.2])
+#axs[7, 4].set_title('Effort_Rate for Cluster 10')
+#axs[7, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==10], color='darkseagreen',range=[400,1500])
+#axs[7, 5].set_title('Total_Premiums for Cluster 10')
+#axs[7, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==10], color='cadetblue', range=[0,1])
+#axs[7, 6].set_title('Cancelled for Cluster 10')
+#plt.sca(axs[7, 6])
+#plt.xticks([0, 1])
+#axs[7, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==10], color='tan',range=[0,1000])
+#axs[7, 7].set_title('Household for Cluster 10')
+#axs[7, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==10], color='rosybrown',range=[0,300])
+#axs[7, 8].set_title('Life for Cluster 10')
+#axs[7, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==10], color='dimgrey',range=[0,400])
+#axs[7, 9].set_title('Health for Cluster 10')
+#axs[7, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==10], color='darkseagreen',range=[0,300])
+#axs[7, 10].set_title('Work_Compensation for Cluster 10')
+#axs[7, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==10], color='cadetblue',range=[0,500])
+#axs[7, 11].set_title('Motor for Cluster 10')
+#
+##cluster 16
+#axs[8, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==16], color='darkseagreen',range=[1,4])
+#axs[8, 0].set_title('Education for Cluster 16')
+#plt.sca(axs[8, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[8, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==16], color='cadetblue',range=[0,1])
+#axs[8, 1].set_title('Children for Cluster 16')
+#plt.sca(axs[8, 1])
+#plt.xticks([0,1])
+#axs[8, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==16], color='tan',range=[0,50000])
+#axs[8, 2].set_title('Yearly_Salary for Cluster 16')
+#axs[8, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==16], color='rosybrown',range=[-250,1000])
+#axs[8, 3].set_title('CMV for Cluster 16')
+#axs[8, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==16], color='dimgrey',range=[0,0.2])
+#axs[8, 4].set_title('Effort_Rate for Cluster 16')
+#axs[8, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==16], color='darkseagreen',range=[400,1500])
+#axs[8, 5].set_title('Total_Premiums for Cluster 16')
+#axs[8, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==16], color='cadetblue', range=[0,1])
+#axs[8, 6].set_title('Cancelled for Cluster 16')
+#plt.sca(axs[8, 6])
+#plt.xticks([0, 1])
+#axs[8, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==16], color='tan',range=[0,1000])
+#axs[8, 7].set_title('Household for Cluster 16')
+#axs[8, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==16], color='rosybrown',range=[0,300])
+#axs[8, 8].set_title('Life for Cluster 16')
+#axs[8, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==16], color='dimgrey',range=[0,400])
+#axs[8, 9].set_title('Health for Cluster 16')
+#axs[8, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==16], color='darkseagreen',range=[0,300])
+#axs[8, 10].set_title('Work_Compensation for Cluster 16')
+#axs[8, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==16], color='cadetblue',range=[0,500])
+#axs[8, 11].set_title('Motor for Cluster 16')
+#
+##cluster 18
+#axs[9, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==18], color='darkseagreen',range=[1,4])
+#axs[9, 0].set_title('Education for Cluster 18')
+#plt.sca(axs[9, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[9, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==18], color='cadetblue',range=[0,1])
+#axs[9, 1].set_title('Children for Cluster 18')
+#plt.sca(axs[9, 1])
+#plt.xticks([0,1])
+#axs[9, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==18], color='tan',range=[0,50000])
+#axs[9, 2].set_title('Yearly_Salary for Cluster 18')
+#axs[9, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==18], color='rosybrown',range=[-250,1000])
+#axs[9, 3].set_title('CMV for Cluster 18')
+#axs[9, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==18], color='dimgrey',range=[0,0.2])
+#axs[9, 4].set_title('Effort_Rate for Cluster 18')
+#axs[9, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==18], color='darkseagreen',range=[400,1500])
+#axs[9, 5].set_title('Total_Premiums for Cluster 18')
+#axs[9, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==18], color='cadetblue', range=[0,1])
+#axs[9, 6].set_title('Cancelled for Cluster 18')
+#plt.sca(axs[9, 6])
+#plt.xticks([0, 1])
+#axs[9, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==18], color='tan',range=[0,1000])
+#axs[9, 7].set_title('Household for Cluster 18')
+#axs[9, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==18], color='rosybrown',range=[0,300])
+#axs[9, 8].set_title('Life for Cluster 18')
+#axs[9, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==18], color='dimgrey',range=[0,400])
+#axs[9, 9].set_title('Health for Cluster 18')
+#axs[9, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==18], color='darkseagreen',range=[0,300])
+#axs[9, 10].set_title('Work_Compensation for Cluster 18')
+#axs[9, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==18], color='cadetblue',range=[0,500])
+#axs[9, 11].set_title('Motor for Cluster 18')
+#
+##cluster 21
+#axs[10, 0].hist(df_insurance_final['Education'].loc[df_insurance_final['Cluster_N']==21], color='darkseagreen',range=[1,4])
+#axs[10, 0].set_title('Education for Cluster 21')
+#plt.sca(axs[10, 0])
+#plt.xticks([1, 2, 3, 4])
+#axs[10, 1].hist(df_insurance_final['Children'].loc[df_insurance_final['Cluster_N']==21], color='cadetblue',range=[0,1])
+#axs[10, 1].set_title('Children for Cluster 21')
+#plt.sca(axs[10, 1])
+#plt.xticks([0,1])
+#axs[10, 2].hist(df_insurance_final['Yearly_Salary'].loc[df_insurance_final['Cluster_N']==21], color='tan',range=[0,50000])
+#axs[10, 2].set_title('Yearly_Salary for Cluster 21')
+#axs[10, 3].hist(df_insurance_final['CMV'].loc[df_insurance_final['Cluster_N']==21], color='rosybrown',range=[-250,1000])
+#axs[10, 3].set_title('CMV for Cluster 21')
+#axs[10, 4].hist(df_insurance_final['Effort_Rate'].loc[df_insurance_final['Cluster_N']==21], color='dimgrey',range=[0,0.2])
+#axs[10, 4].set_title('Effort_Rate for Cluster 21')
+#axs[10, 5].hist(df_insurance_final['Total_Premiums'].loc[df_insurance_final['Cluster_N']==21], color='darkseagreen',range=[400,1500])
+#axs[10, 5].set_title('Total_Premiums for Cluster 21')
+#axs[10, 6].hist(df_insurance_final['Cancelled'].loc[df_insurance_final['Cluster_N']==21], color='cadetblue', range=[0,1])
+#axs[10, 6].set_title('Cancelled for Cluster 21')
+#plt.sca(axs[10, 6])
+#plt.xticks([0, 1])
+#axs[10, 7].hist(df_insurance_final['Household'].loc[df_insurance_final['Cluster_N']==21], color='tan',range=[0,1000])
+#axs[10, 7].set_title('Household for Cluster 21')
+#axs[10, 8].hist(df_insurance_final['Life'].loc[df_insurance_final['Cluster_N']==21], color='rosybrown',range=[0,300])
+#axs[10, 8].set_title('Life for Cluster 21')
+#axs[10, 9].hist(df_insurance_final['Health'].loc[df_insurance_final['Cluster_N']==21], color='dimgrey',range=[0,400])
+#axs[10, 9].set_title('Health for Cluster 21')
+#axs[10, 10].hist(df_insurance_final['Work_Compensation'].loc[df_insurance_final['Cluster_N']==21], color='darkseagreen',range=[0,300])
+#axs[10, 10].set_title('Work_Compensation for Cluster 21')
+#axs[10, 11].hist(df_insurance_final['Motor'].loc[df_insurance_final['Cluster_N']==21], color='cadetblue',range=[0,500])
+#axs[10, 11].set_title('Motor for Cluster 21')
+#
+#plt.show()
 
 
 
