@@ -2378,9 +2378,9 @@ df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
 
 
 dictClusters = {1:'Silver_Health_Motor_HighEduc_Child', 8:'Bronze_Health_Motor_HighEduc_Child', 
-                2:'Gold_Household_Life_Work_HighEduc_Child', 10:'Bronze_Health_BasicEduc_Child', 
-                4:'Bronze_Motor_HighEduc_Child', 18:'Silver_Health_HighEduc_NoChild', 
-                5:'Silver_Health_BasicEduc_Child', 21:'Gold_Household_Life_Work_BasicEduc_Child' }
+                2:'Gold_Household_Life_Work_Child', 10:'Bronze_Health_Motor_HighEduc_NoChild', 
+                4:'Bronze_Motor_HighEduc_Child', 18:'Silver_Household_Motor_Health_BasicEduc_Child', 
+                5:'Silver_Health_Motor_HighEduc_NoChild', 21:'Gold_Household_Life_Work_NoChild' }
 
 df_insurance_final['Clusters'] = df_insurance_final['Cluster_N'].apply(lambda x: dictClusters.get(x))
 
