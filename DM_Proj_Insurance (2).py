@@ -2800,8 +2800,11 @@ NN.train()
 example = observations_out.loc[:, observations_out.columns.isin(['Motor','Work_Compensation', 'Health', 'Life', 'Household',
                                                                     'Cancelled', 'Total_Premiums', 'Effort_Rate', 'CMV',
                                                                     'Yearly_Salary', 'Children', 'Education'])]
-    
-NN.predict(example)
+
+predictions=pd.DataFrame(columns=['predictions'])
+
+for i in range(0, len(example)):
+    predictions['predictions'][i] = NN.predict(example.iloc[[i]])
 
 plt.figure(figsize=(15,5))
 plt.plot(NN.epoch_list, NN.error_history)
