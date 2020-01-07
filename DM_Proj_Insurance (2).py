@@ -2302,7 +2302,7 @@ train_index, test_index = next(iter(skf.split(df_insurance_final.loc[:, ~df_insu
 # variables not included in the train of the model
 variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
                'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
-               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N']
+               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N', 'Claims_Rate']
 
 
 # Get the train and test dataset
@@ -2342,7 +2342,7 @@ matrix = confusion_matrix(y_test, y_pred)
 # variables not included in the train of the model
 variables_out=['Cust_ID','Effort_Rate_sqrt','Health_Ratio','Household_Ratio','Household_Ratio_sqrt',
                'Household_sqrt','Life_Ratio','Life_Ratio_sqrt','Life_sqrt','Motor_Ratio','Work_Ratio',
-               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N']
+               'Work_Ratio_sqrt','Work_sqrt','Client_Years','Clusters','Cluster_N', 'Claims_Rate']
 # temporary dataframe to use to get the labels of the unclassified observations
 temp = classify.drop(columns=variables_out).copy()
 
@@ -2360,7 +2360,7 @@ classify.columns = [*classify.columns[:-1], 'Cluster_N_after']
 
 del X_test,X_train,dot_data,temp,test_index,train_index,y_pred,y_train,variables_out,y_pred_final,y_test
 
-del outliers, observations_out
+#del outliers, observations_out
 
 # FINAL LABELED OUTLIERS
 outliers = classify[1377:].copy()
@@ -2375,11 +2375,16 @@ temp = observations_out.copy()
 temp.drop(columns=['Clusters','Cluster_N'], inplace=True)
 temp.rename(columns={"Cluster_N_after": "Cluster_N"}, inplace=True)
 
-
-
 df_insurance_final = pd.concat([df_insurance_final, outliers, temp], axis=0)
 
+# =============================================================================
+# VISUALIZATIONS PER CLUSTERS
+# =============================================================================
 
+# Count observations per cluster Outliers
+outliers.groupby(['Cluster_N'])['Cust_ID'].count()
+df_insurance_final.groupby(['Cluster_N'])['Cust_ID'].count()
 
+observations_out.groupby(['Cluster_N', 'Cluster_N_after'])['Cust_ID'].aggregate('count').unstack()
 
 
