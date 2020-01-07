@@ -2748,5 +2748,66 @@ axs[10, 11].set_title('Motor for Cluster 21')
 plt.show()
 
 
+# =============================================================================
+# NEURAL NETWORK
+# =============================================================================
+
+inputs = df_insurance_final.loc[:, df_insurance_final.columns.isin(['Motor','Work_Compensation', 'Health', 'Life', 'Household',
+                                                                    'Cancelled', 'Total_Premiums', 'Effort_Rate', 'CMV',
+                                                                    'Yearly_Salary', 'Children', 'Education'])]
+
+outputs = df_insurance_final['Cluster_N']
+
+class NeuralNetwork:
+
+    def __init__(self, inputs, outputs):
+        self.inputs  = inputs
+        self.outputs = outputs
+        self.weights = np.array([[.50], [.50], [.50], [.50], [.50], [.50], [.50], [.50], [.50], [.50], [.50], [.50]])
+        self.error_history = []
+        self.epoch_list = []
+        
+        
+    def sigmoid(self, x, deriv=False):
+        if deriv == True:
+            return x * (1 - x)
+        return 1 / (1 + np.exp(-x))
+        
+    def feed_forward(self):
+        self.hidden = self.sigmoid(np.dot(self.inputs, self.weights))
+        
+    def backpropagation(self):
+        self.error  = self.outputs - self.hidden
+        delta = self.error * self.sigmoid(self.hidden, deriv=True)
+        self.weights += np.dot(self.inputs.T, delta)
+        
+    def train(self, epochs=25000):
+        for epoch in range(epochs):
+            self.feed_forward()
+            self.backpropagation()
+
+            self.error_history.append(np.average(np.abs(self.error)))
+            self.epoch_list.append(epoch)
+            
+    def predict(self, new_input):
+        prediction = self.sigmoid(np.dot(new_input, self.weights))
+        return prediction
+    
+NN = NeuralNetwork(inputs, outputs)
+
+NN.train()
+
+example = observations_out.loc[:, observations_out.columns.isin(['Motor','Work_Compensation', 'Health', 'Life', 'Household',
+                                                                    'Cancelled', 'Total_Premiums', 'Effort_Rate', 'CMV',
+                                                                    'Yearly_Salary', 'Children', 'Education'])]
+    
+NN.predict(example)
+
+plt.figure(figsize=(15,5))
+plt.plot(NN.epoch_list, NN.error_history)
+plt.xlabel('Epoch')
+plt.ylabel('Error')
+plt.show()
+
 
 
