@@ -1,7 +1,7 @@
 # DataMining - Customer Segmentation for Insurance Company    
 
 ## Objective
-From a database of 10290 customers, develop a customer segmentation to better understand all the different Customers’ Profiles.
+From a database of 10290 customers, develop a customer segmentation to better understand all the different Customers’ Profiles of a fictional Insurance Company.
 
 ## Methodology
 The dataset was studied, preprocessed - coherence checking, outliers, missing values-, and transformed before applying clustering techniques.
